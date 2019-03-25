@@ -1,11 +1,16 @@
-from django.db import models
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from desk.models import Desk
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
+    PermissionsMixin, AbstractUser, UserManager
 
 
-class CustomUser(User):
-    pass
+class UserManager(UserManager):
+  pass
+
+
+class User(AbstractUser):
+    objects = UserManager()
 
 
 class CustomGroup(Group):

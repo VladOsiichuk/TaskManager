@@ -1,5 +1,5 @@
 from django.db import models
-from user_auth.models import CustomUser
+from django.conf import settings
 
 
 class Desk(models.Model):
@@ -10,7 +10,7 @@ class Desk(models.Model):
     @description: short description of the desk
     """
 
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
 
@@ -26,7 +26,7 @@ class Column(models.Model):
     @name: title of column
     """
 
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
     order_in_desk = models.IntegerField
     name = models.CharField(max_length=64)
@@ -46,7 +46,7 @@ class Task(models.Model):
     """
 
     related_column = models.ForeignKey(Column, on_delete=models.CASCADE)
-    current_executor = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    current_executor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
     task_deadline = models.DateField(blank=True)
