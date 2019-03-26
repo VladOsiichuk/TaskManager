@@ -1,6 +1,25 @@
 from django.db import models
+from django.core.serializers import serialize
 #from django.contrib.auth import get_user_model
 from django.conf import settings
+import json
+
+
+class DeskQuerySet(models.QuerySet):
+    def serialize(self):
+        qs = self
+        final_array = []
+
+        for obj in qs:
+            struct = json.loads(obj.serialize())
+            final_array.append(struct)
+
+        return json.dumps(final_array)
+
+
+class DeskManager(models.Manager):
+    def get_queryset(self):
+        return DeskQuerySet(self.model, using=self._db)
 
 
 class Desk(models.Model):
@@ -15,8 +34,21 @@ class Desk(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
 
+    objects = DeskManager()
+
     def __str__(self):
         return f"{self.name}"
+
+    def serialize(self):
+        data = {
+            "id": self.id,
+            "name": self.name,
+            "author": self.author.id,
+            "description": self.description
+        }
+
+        data = json.dumps(data)
+        return data
 
 
 class Column(models.Model):

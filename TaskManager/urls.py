@@ -20,13 +20,17 @@ from django.urls import path, include
 from django.conf.urls import url
 from user_auth.views import UserViewSet
 from rest_framework import routers
+#from desk.api_desks.views import DeskDetailApiView, DeskModelListApiView
+
 
 router = routers.DefaultRouter()
 router.register(r'user', UserViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='API documentation', public=False)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    url('api_desks/desks/', include('desk.api_desks.urls')),
 ]
