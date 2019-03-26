@@ -1,8 +1,7 @@
 from django.contrib import admin
-from .models import Desk, Task, Column
-from django.conf import settings
+from .model import Desk, Task, Column, Comment
 
 admin.site.register(Desk)
 admin.site.register(Task)
 admin.site.register(Column)
-#admin.site.register(settings.AUTH_USER_MODEL)
+admin.site.register(Comment)

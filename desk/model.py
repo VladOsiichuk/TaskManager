@@ -1,4 +1,5 @@
 from django.db import models
+#from django.contrib.auth import get_user_model
 from django.conf import settings
 
 
@@ -53,3 +54,17 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+class Comment(models.Model):
+    """
+    @author: who created comment
+    @comment_body: comment
+    @related_task: for which task is this one
+    """
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    comment_body = models.TextField(max_length=500)
+    related_task = models.ForeignKey(Task, on_delete=models.CASCADE)
+
+    # TODO
+    # after add fields for img attaching or video attaching
