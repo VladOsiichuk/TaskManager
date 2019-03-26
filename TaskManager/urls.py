@@ -27,10 +27,11 @@ router = routers.DefaultRouter()
 router.register(r'user', UserViewSet)
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='API documentation', public=False)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('', include(router.urls)),
-    url('api_desks/desks/', include('desk.api_desks.urls')),
+    url('api_desks/', include('desk.api_desks.urls')),
 ]

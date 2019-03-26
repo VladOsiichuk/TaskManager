@@ -7,35 +7,44 @@ from rest_framework.views import APIView
 from desk.forms import DeskModelForm
 from desk.mixins import HttpResponseMixin
 from user_auth.models import CustomGroup
+from rest_framework import viewsets
+from .serializers import DeskSerializer
 
 
-class DeskDetailApiView(APIView, HttpResponseMixin):
+class DeskDetailApiView(viewsets.ViewSet, HttpResponseMixin, viewsets.GenericViewSet):
     """
-    View for just one object instance
+    create:
+    Create new instance
     """
 
     is_json = True
     authentication_classes = (SessionAuthentication, BasicAuthentication)
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, id, *args, **kwargs):
-        obj = Desk.objects.get(id=id)
-        json_data = obj.serialize()
+    serializer_class = DeskSerializer
 
-        return self.render_to_response(json_data)
+    def retrieve(self, request, pk):
+        try:
+            obj = Desk.objects.get(id=pk)
+            json_data = obj.serialize()
+            return self.render_to_response(json_data)
 
-    def post(self, request, *args, **kwargs):
+        except Desk.DoesNotExist:
+            json_data = json.dumps({"message": "Desk with your id does not exists"})
+            return self.render_to_response(json_data, 404)
+
+    def create(self, request, *args, **kwargs):
         json_data = json.dumps({"Message": "use api_desks/desks/ endpoint in order to create Desk"})
         return self.render_to_response(json_data, 403)
 
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         pass
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         pass
 
 
-class DeskModelListApiView(APIView, HttpResponseMixin):
+class DeskModelListApiView(viewsets.ViewSet, HttpResponseMixin):
     """
     post:
     Create a new Desk instance
@@ -44,13 +53,13 @@ class DeskModelListApiView(APIView, HttpResponseMixin):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (SessionAuthentication, BasicAuthentication)
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         qs = Desk.objects.all()
         json_data = qs.serialize()
 
         return self.render_to_response(json_data)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
 
         form = DeskModelForm(request.POST)
         if form.is_valid():
@@ -59,6 +68,15 @@ class DeskModelListApiView(APIView, HttpResponseMixin):
 
             basic_group = CustomGroup.objects.create(name="POOL_" + obj.name + "_" + str(obj.id),
                                                      related_desk=obj)
+
+            editor_group = CustomGroup.objects.create(name="EDITOR_" + obj.name + "_" + str(obj.id),
+                                                      related_desk=obj)
+
+            staff_group = CustomGroup.objects.create(name="STAFF_" + obj.name + "_" + str(obj.id),
+                                                     related_desk=obj)
+            basic_group.save()
+            editor_group.save()
+            staff_group.save()
             obj.save()
             obj_data = obj.serialize()
             return self.render_to_response(obj_data)
