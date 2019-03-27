@@ -6,15 +6,11 @@ import json
 
 
 class DeskQuerySet(models.QuerySet):
-    def serialize(self):
-        qs = self
-        final_array = []
 
-        for obj in qs:
-            struct = json.loads(obj.serialize())
-            final_array.append(struct)
-
-        return json.dumps(final_array)
+    # def serialize(self):
+    #     list_values = list(self.values('author', 'name', 'description'))
+    #     return json.dumps(list_values)
+    pass
 
 
 class DeskManager(models.Manager):
@@ -39,16 +35,20 @@ class Desk(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    def serialize(self):
-        data = {
-            "id": self.id,
-            "name": self.name,
-            "author": self.author.id,
-            "description": self.description
-        }
+    class Meta:
+        verbose_name = "Desk post"
+        verbose_name_plural = "Desk posts"
 
-        data = json.dumps(data)
-        return data
+    # def serialize(self):
+    #     data = {
+    #         "id": self.id,
+    #         "name": self.name,
+    #         "author": self.author.id,
+    #         "description": self.description
+    #     }
+    #
+    #     data = json.dumps(data)
+    #     return data
 
 
 class Column(models.Model):
@@ -79,7 +79,7 @@ class Task(models.Model):
     """
 
     related_column = models.ForeignKey(Column, on_delete=models.CASCADE)
-    current_executor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    current_executor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
     task_deadline = models.DateField(blank=True)
