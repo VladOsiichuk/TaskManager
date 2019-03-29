@@ -30,7 +30,19 @@ class Desk(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
 
-    objects = DeskManager()
+    #objects = DeskManager()
+
+    @property
+    def desk_name(self):
+        return self.name
+
+    @property
+    def desk_id(self):
+        return self.id
+
+    @property
+    def desk_author(self):
+        return self.author
 
     def __str__(self):
         return f"{self.name}"
@@ -61,12 +73,28 @@ class Column(models.Model):
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
-    order_in_desk = models.IntegerField
+    #order_in_desk = models.IntegerField
     name = models.CharField(max_length=64)
     created = models.DateField(auto_now_add=True, blank=True, editable=False)
 
     def __str__(self):
         return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Column"
+        verbose_name_plural = "Columns"
+
+    @property
+    def desk_name(self):
+        return self.related_desk.name
+
+    @property
+    def desk_id(self):
+        return self.related_desk.id
+
+    @property
+    def desk_author(self):
+        return self.related_desk.author
 
 
 class Task(models.Model):
@@ -77,12 +105,24 @@ class Task(models.Model):
     @description: description
     @task_deadline: deadline of execution
     """
-
+#    author = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     related_column = models.ForeignKey(Column, on_delete=models.CASCADE)
     current_executor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     description = models.TextField(max_length=500)
     task_deadline = models.DateField(blank=True)
+
+    @property
+    def desk_name(self):
+        return self.related_column.related_desk.name
+
+    @property
+    def desk_id(self):
+        return self.related_column.related_desk.id
+
+    @property
+    def desk_author(self):
+        return self.related_column.related_desk.author
 
     def __str__(self):
         return f"{self.name}"
@@ -97,6 +137,18 @@ class Comment(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     comment_body = models.TextField(max_length=500)
     related_task = models.ForeignKey(Task, on_delete=models.CASCADE)
+
+    @property
+    def desk_name(self):
+        return self.related_task.related_column.related_desk.name
+
+    @property
+    def desk_id(self):
+        return self.related_task.related_column.related_desk.id
+
+    @property
+    def desk_author(self):
+        return self.related_task.related_column.related_desk.author
 
     # TODO
     # after add fields for img attaching or video attaching

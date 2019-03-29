@@ -14,7 +14,6 @@ User = get_user_model()
 
 
 class UserRegisterAPIView(generics.CreateAPIView):
-
     """
     create:
     Create a new user instance
@@ -40,12 +39,12 @@ class UserRegisterAPIView(generics.CreateAPIView):
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-           login(request, user)
+            login(request, user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class AuthView(APIView):
+class AuthView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
@@ -64,6 +63,8 @@ class AuthView(APIView):
 
         user = authenticate(request, email=email, password=password)
 
+        # check this one
+        # --------------------
         qs = User.objects.filter(
             Q(username__iexact=email) |
             Q(email__iexact=email)
@@ -74,7 +75,7 @@ class AuthView(APIView):
             if user_obj.check_password(password):
                 login(request, user)
                 return Response({"status": "Successfully authenticated. See cookie"}, status=200)
-
+        # ---------------------
         return Response({"error": "invalid credentials"}, status=401)
 
     # def create(self, request, *args, **kwargs):

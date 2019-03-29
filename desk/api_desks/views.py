@@ -1,10 +1,14 @@
 from desk.model import Desk
-from django.shortcuts import get_object_or_404
 from .serializers import DeskSerializer
 from rest_framework import generics
 from rest_framework import mixins, permissions
 from rest_framework.authentication import SessionAuthentication
 import json
+from user_auth.models import UsersDesks, CustomGroup
+from rest_framework import status
+from rest_framework.response import Response
+from api_rules.permissions import IsAdminOfDesk
+
 
 # class DeskDetailApiView(viewsets.ViewSet, HttpResponseMixin, viewsets.GenericViewSet):
 #     """
@@ -106,27 +110,27 @@ def is_json(json_data):
 class DeskAPIView(generics.ListAPIView,
                   mixins.CreateModelMixin,
                   ):
-
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication]
     serializer_class = DeskSerializer
     passed_id = None
+    queryset = Desk.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        return serializer.save(author=self.request.user)
 
     # def perform_destroy(self, instance):
     #     if instance is not None:
     #         return instance.delete()
     #     return None
 
-    def get_queryset(self):
-        request = self.request
-        qs = Desk.objects.all()
-        query = request.GET.get('q')
-        if query is not None:
-            qs = qs.filter(content__icontatins=query)
-        return qs
+    # def get_queryset(self):
+    #     request = self.request
+    #     qs = Desk.objects.all()
+    #     query = request.GET.get('q')
+    #     if query is not None:
+    #         qs = qs.filter(content__icontatins=query)
+    #     return qs
 
     # def get_object(self):
     #     request = self.request
@@ -138,24 +142,45 @@ class DeskAPIView(generics.ListAPIView,
     #         self.check_object_permissions(request, obj)
     #     return obj
 
-    def get(self, request, *args, **kwargs):
-        url_passed_id = request.GET.get('id', None) or self.passed_id
-        json_data = {}
-        body_ = request.body
-
-        if is_json(body_):
-            json_data = json.loads(request.body)
-
-        new_passed_id = json_data.get('id', None)
-        passed_id = url_passed_id or new_passed_id or None
-        self.passed_id = passed_id
-        if passed_id is not None:
-            return self.retrieve(request, *args, **kwargs)
-
-        return super().get(request, *args, **kwargs)
+    # TODO
+    # def get(self, request, *args, **kwargs):
+    #     user = request.user
+    #     desks = user.usersdesks_set.all()
+    #     print(len(desks))
+    #     serializer = self.get_serializer(desks, many=True)
+    #     json_data = serializer.data
+    #     #json_data = serializers.serialize('json', desks)
+    #     #json_data = json_data.data
+    #     return Response(json_data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        # create Desk object
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        desk_object = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        # create relation between user and desk
+        rel = UsersDesks.objects.create(user=request.user, desks=desk_object)
+        rel.save()
+
+        # create pool groups for permissions
+        staff_group = CustomGroup.objects.create(name="STAFF_" + desk_object.name + "_" + str(desk_object.id),
+                                                 related_desk=desk_object)
+
+        editor_group = CustomGroup.objects.create(name="EDITOR_" + desk_object.name + "_" + str(desk_object.id),
+                                                  related_desk=desk_object)
+
+        # add all participants of the desk here
+        common_group = CustomGroup.objects.create(name="COMMON_" + desk_object.name + "_" + str(desk_object.id),
+                                                  related_desk=desk_object)
+
+        staff_group.save()
+        editor_group.save()
+        common_group.save()
+
+        # return success response
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 # class DeskCreateAPIView(generics.CreateAPIView):
@@ -164,18 +189,19 @@ class DeskAPIView(generics.ListAPIView,
 #     queryset = Desk.objects.all()
 #     serializer_class = DeskSerializer
 
-    # def get_queryset(self):
-    #     qs = Desk.objects.all()
-    #     query = self.request.GET.get('q')
-    #     if query is not None:
-    #         qs = qs.filter(content__icontatins=query)
-    #     return qs
+# def get_queryset(self):
+#     qs = Desk.objects.all()
+#     query = self.request.GET.get('q')
+#     if query is not None:
+#         qs = qs.filter(content__icontatins=query)
+#     return qs
 
 
-class DeskDetailAPIView(generics.RetrieveAPIView,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin):
-    permission_classes = [permissions.IsAuthenticated]
+class DeskDetailAPIView(mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin,
+                        generics.RetrieveAPIView,
+                        ):
+    permission_classes = [permissions.IsAuthenticated, IsAdminOfDesk]
     authentication_classes = [SessionAuthentication]
     queryset = Desk.objects.all()
     serializer_class = DeskSerializer

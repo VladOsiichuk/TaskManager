@@ -1,6 +1,5 @@
 from django.conf.urls import url
-from .views import (DeskAPIView,
-                    DeskDetailAPIView)
+from .views import AddUserWithPermissionsAPIView
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
@@ -11,13 +10,11 @@ from rest_framework.routers import DefaultRouter
 
 urlpatterns = [
     #path('create/', DeskCreateAPIView.as_view()),
-    path('<int:id>/', DeskDetailAPIView.as_view()),
+    #path('<int:id>/', DeskDetailAPIView.as_view()),
     # path('<int:id>/update', DeskUpdateAPIView.as_view()),
     # path('<int:id>/delete', DeskDeleteAPIView.as_view()),
-    path('', DeskAPIView.as_view()),
-
+    path('<int:desk_id>/add/<int:id>/', AddUserWithPermissionsAPIView.as_view()),
     #    path('', include(router.urls)),
     #    path('<int:id>/', DeskDetailApiView),
     #    url('', DeskModelListApiView),
-
 ]
