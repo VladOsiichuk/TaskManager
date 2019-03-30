@@ -11,5 +11,5 @@ from .views import UserRegisterAPIView, AuthView
 
 urlpatterns = [
     path('register/', UserRegisterAPIView.as_view()),
-    path('login/', AuthView.as_view()),
+    path('', AuthView.as_view()),
 ]
