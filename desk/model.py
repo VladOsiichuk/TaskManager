@@ -27,8 +27,8 @@ class Desk(models.Model):
     """
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=64)
-    description = models.TextField(max_length=500)
+    name = models.CharField(max_length=64, help_text="Title of the Desk")
+    description = models.TextField(max_length=500, help_text='Description of the Desk')
 
     objects = DeskManager()
 
@@ -60,9 +60,9 @@ class Column(models.Model):
     """
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE)
-    order_in_desk = models.IntegerField
-    name = models.CharField(max_length=64)
+    related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE, help_text='ID of desk for which Column is related')
+    #order_in_desk = models.IntegerField
+    name = models.CharField(max_length=64, help_text="Title of the Column")
     created = models.DateField(auto_now_add=True, blank=True, editable=False)
 
     def __str__(self):
@@ -78,11 +78,13 @@ class Task(models.Model):
     @task_deadline: deadline of execution
     """
 
-    related_column = models.ForeignKey(Column, on_delete=models.CASCADE)
-    current_executor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    name = models.CharField(max_length=64)
-    description = models.TextField(max_length=500)
-    task_deadline = models.DateField(blank=True)
+    related_column = models.ForeignKey(Column, on_delete=models.CASCADE, help_text="ID of column for "
+                                                                                   "who Task is related")
+    current_executor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                            help_text="ID of user for who task is assigned")
+    name = models.CharField(max_length=64, help_text='Title of the task')
+    description = models.TextField(max_length=500, help_text='Description of the Task')
+    task_deadline = models.DateField(blank=True, help_text='Deadline of the task. format=Date(YYYY-MM-DD)')
 
     def __str__(self):
         return f"{self.name}"
@@ -95,8 +97,9 @@ class Comment(models.Model):
     @related_task: for which task is this one
     """
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    comment_body = models.TextField(max_length=500)
-    related_task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    comment_body = models.TextField(max_length=500, help_text='Comment text')
+    related_task = models.ForeignKey(Task, on_delete=models.CASCADE, help_text='ID of task for which'
+                                                                               ' this one is related')
 
     # TODO
     # after add fields for img attaching or video attaching
