@@ -1,33 +1,24 @@
-#from sqlite3 import IntegrityError
 from django.db import IntegrityError
 from .permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher, IsStaffOfDeskOrHigher
-from rest_framework.views import APIView
 from .serializers import UpdateUserPermissionsSerializer, AddUserToDeskSerializer
-from user_auth.models import CustomGroup
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import generics
 from desk.model import Desk
+from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from rest_framework import mixins
-from .models import PermissionRow
 
 User = get_user_model()
 
 
-class SetUsersPermissionsAPIView(#generics.CreateAPIView,
-                                    #generics.ListAPIView,
-                                    #generics.RetrieveAPIView,
-                                    generics.UpdateAPIView,
-                                    #generics.ListAPIView,
-                                    generics.CreateAPIView,
-                                    #APIView,
-                                    generics.DestroyAPIView,
-                                    generics.GenericAPIView
-                                   ):
+class SetUsersPermissionsAPIView(generics.UpdateAPIView,
+                                 generics.CreateAPIView,
+                                 generics.DestroyAPIView,
+                                 generics.GenericAPIView
+                                 ):
 
     authentication_classes = [SessionAuthentication]
-    permission_classes = [IsEditorOfDeskOrHigher]
+    permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     serializer_class = AddUserToDeskSerializer
     queryset = Desk.objects.all()
     lookup_field = 'id'
@@ -55,13 +46,13 @@ class SetUsersPermissionsAPIView(#generics.CreateAPIView,
 
         except IntegrityError:
             return Response({"error": "This user already has a "
-                                      "permission in selected group. use PATCH "
+                                      "permission in selected group. use PUT "
                                       "method to change his permission"}, status=403)
 
         return Response({"message": f"successfully set user's permission to {set_permission}"}, status=200)
 
     def patch(self, request, *args, **kwargs):
-        pass
+        return Response({"message": "Use PUT method in order to update permissions"}, status=400)
 
     def put(self, request, *args, **kwargs):
         """

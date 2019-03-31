@@ -31,18 +31,6 @@ class Desk(models.Model):
 
     #objects = DeskManager()
 
-    @property
-    def desk_name(self):
-        return self.name
-
-    @property
-    def desk_id(self):
-        return self.id
-
-    @property
-    def desk_author(self):
-        return self.author
-
     def __str__(self):
         return f"{self.name}"
 
@@ -72,7 +60,8 @@ class Column(models.Model):
 
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE, help_text='ID of desk for which Column is related')
+    related_desk = models.ForeignKey(Desk, related_name='columns',
+                                     on_delete=models.CASCADE, help_text='ID of desk for which Column is related')
     name = models.CharField(max_length=64, help_text="Title of the Column")
 
     created = models.DateField(auto_now_add=True, blank=True, editable=False)
@@ -83,18 +72,6 @@ class Column(models.Model):
     class Meta:
         verbose_name = "Column"
         verbose_name_plural = "Columns"
-
-    @property
-    def desk_name(self):
-        return self.related_desk.name
-
-    @property
-    def desk_id(self):
-        return self.related_desk.id
-
-    @property
-    def desk_author(self):
-        return self.related_desk.author
 
 
 class Task(models.Model):
@@ -113,18 +90,6 @@ class Task(models.Model):
     name = models.CharField(max_length=64, help_text='Title of the task')
     description = models.TextField(max_length=500, help_text='Description of the Task')
     task_deadline = models.DateField(blank=True, help_text='Deadline of the task. format=Date(YYYY-MM-DD)')
-
-    @property
-    def desk_name(self):
-        return self.related_column.related_desk.name
-
-    @property
-    def desk_id(self):
-        return self.related_column.related_desk.id
-
-    @property
-    def desk_author(self):
-        return self.related_column.related_desk.author
 
     def __str__(self):
         return f"{self.name}"

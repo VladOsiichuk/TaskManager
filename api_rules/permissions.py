@@ -1,7 +1,8 @@
 from rest_framework import permissions
 #from user_auth.models import CustomGroup
 from .models import PermissionRow
-from desk.model import Desk
+from desk.model import Desk, Column, Comment, Task
+
 
 permission_dict = {
     "STAFF": 1,
@@ -11,6 +12,14 @@ permission_dict = {
 
 
 class IsAdminOfDesk(permissions.BasePermission):
+
+    # def has_permission(self, request, view):
+    #     print(type(view))
+    #     print(view)
+    #     desk = Desk.objects.get(id=self.kwargs["id"])
+    #
+    #     return desk.author == request.user
+
     """
     Only author of the Desk object is ADMIN
     """
@@ -23,8 +32,6 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
     """
     EDITOR user should be in the EDITOR_desk.name_desk.id CustomGroup
     """
-    #def has_permission(self, request, view):
-        #return False
 
     def has_object_permission(self, request, view, obj):
 
@@ -35,8 +42,20 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
         # group_name = "EDITOR_" + obj.desk_name + "_" + str(obj.desk_id)
         #
         # return request.user in CustomGroup.objects.get(name=group_name).user_set.all()
+        user_set = None
 
-        user_set = obj.permissionrow_set.all()
+        if isinstance(obj, Desk):
+            user_set = obj.permissionrow_set.all()
+
+        if isinstance(obj, Column):
+            user_set = obj.related_desk.permissionrow_set.all()
+
+        if isinstance(obj, Task):
+            user_set = obj.related_column.related_desk.permissionrow_set.all()
+
+        if isinstance(obj, Comment):
+            user_set = obj.related_task.related_column.related_desk.permissionrow_set.all()
+
         #print(user_set)
         user_perm = user_set.filter(user=request.user).first()
         if user_perm:
@@ -51,23 +70,28 @@ class IsStaffOfDeskOrHigher(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        user_set = None
+        print(obj)
+        if isinstance(obj, Desk):
+            user_set = obj.permissionrow_set.all()
+
+        if isinstance(obj, Column):
+            user_set = obj.related_desk.permissionrow_set.all()
+
+        if isinstance(obj, Task):
+            user_set = obj.related_column.related_desk.permissionrow_set.all()
+
+        if isinstance(obj, Comment):
+            user_set = obj.related_task.related_column.related_desk.permissionrow_set.all()
+
+        # print(user_set)
+        user_perm = user_set.filter(user=request.user).first()
+        if user_perm:
+            return permission_dict[user_perm.permission] > 0
 
         return False
-        # check if user is not ADMIN
-        # if request.user == obj.desk_author:
-        #     return True
-        #
-        # # check if user is not EDITOR
-        # editor_group_name = "EDITOR_" + obj.desk_name + "_" + str(obj.desk_id)
-        # if request.user in CustomGroup.objects.get(name=editor_group_name).user_set.all():
-        #     return True
-        #
-        # group_name = "STAFF_" + obj.desk_name + "_" + str(obj.desk_id)
-        #
-        # return request.user in CustomGroup.objects.get(name=group_name).user_set.all()
 
-
-#class IsParticipantOfDesk(permissions.BasePermission):
+    #class IsParticipantOfDesk(permissions.BasePermission):
     """
     check if user is participant of this desk
     """

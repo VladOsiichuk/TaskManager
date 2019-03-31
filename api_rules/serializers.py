@@ -51,13 +51,14 @@ class AddUserToDeskSerializer(serializers.ModelSerializer):
         ]
 
     def validate_set_to_permission(self, value):
-
         if value.upper() != "STAFF" and value.upper() != "EDITOR":
             raise serializers.ValidationError("Permission should be STAFF or EDITOR")
+        return value
 
     def validate_user_id(self, value):
-        if not isinstance(int, value):
-            raise serializers.ValidationError("user_id should be int")
+        if not isinstance(value, int):
+            raise serializers.ValidationError("user_id should be integer")
+        return value
 
     #     return value
     # def create(self, validated_data):

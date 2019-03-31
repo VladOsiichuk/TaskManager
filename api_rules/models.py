@@ -13,3 +13,6 @@ class PermissionRow(models.Model):
 
     class Meta:
         unique_together = ('user', 'related_desk')
+
+    def __str__(self):
+        return f"{self.user} - {self.permission} ({self.related_desk})"

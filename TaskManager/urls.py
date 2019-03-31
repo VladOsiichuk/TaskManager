@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^docs/', include_docs_urls(title='API documentation', public=False)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api_user/', include('user_auth.urls')),
-    url('api_desks/', include('desk.api_desks.urls')),
+    path('api-desks/', include('desk.api_desks.urls')),
+    #path('api_columns/', include('desk.api_columns.urls'))
     #url('api_rules/', include('api_rules.urls')),
 ]

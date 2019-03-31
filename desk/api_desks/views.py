@@ -114,7 +114,6 @@ class DeskAPIView(generics.ListAPIView,
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication]
     serializer_class = DeskSerializer
-    passed_id = None
     queryset = Desk.objects.all()
 
     def perform_create(self, serializer):
@@ -158,7 +157,9 @@ class DeskAPIView(generics.ListAPIView,
         # create Desk object
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         desk_object = self.perform_create(serializer)
+
         headers = self.get_success_headers(serializer.data)
 
         # create relation between user and desk
