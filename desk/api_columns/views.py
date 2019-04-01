@@ -55,7 +55,10 @@ class ColumnDetailAPIView(mixins.UpdateModelMixin,
     lookup_url_kwarg = 'column_id'
 
     def get(self, request, *args, **kwargs):
-        instance = self.get_object()
+        instance = Column.objects.prefetch_related("tasks__comments")\
+            .get(id=self.kwargs['column_id'])
+
+        #select_related("related_desk").filter(id=self.kwargs["column_id"]).first()
         if instance.related_desk_id != self.kwargs["desk_id"]:
             return Response({"detail": "not found"}, status=404)
 

@@ -105,7 +105,7 @@ class DeskAPIView(generics.ListAPIView,
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [SessionAuthentication]
     serializer_class = DeskSerializer
-    queryset = Desk.objects.all()
+#    queryset = Desk.objects.all()
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
 
@@ -121,11 +121,21 @@ class DeskAPIView(generics.ListAPIView,
         request = self.request
 
         # Show only Desks in which user is participant
-        users_qs = Desk.objects.filter(permissionrow__user=request.user)
+        users_qs = Desk.objects.prefetch_related('columns__tasks__comments').filter(permissionrow__user=request.user)
 
         return users_qs
 
     # def get_object(self):
+    #     request = self.request
+    #     passed_id = self.kwargs["desk_id"]
+    #     #print(passed_id)
+    #     #query_set = self.get_queryset()
+    #     obj = Desk.objects.prefetch_related("permissionrow_set").filter(id=passed_id).first()
+    #     print(obj)
+    #     #self.check_object_permissions(request, obj)
+    #     return obj
+    #
+    # # def get_object(self):
     #     request = self.request
     #     passed_id = request.GET.get('id')
     #     query_set = self.get_queryset()
@@ -205,10 +215,26 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
                         ):
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
-    queryset = Desk.objects.all()
+ #   queryset = Desk.objects.prefetch_related("permissionrow_set").all()
     serializer_class = DeskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
+
+    def get_queryset(self):
+        desk_id = self.kwargs["desk_id"]
+        #print(desk_id)
+        qs = Desk.objects.prefetch_related('columns__tasks__comments').filter(id=desk_id).first()
+        return qs
+
+    def get_object(self):
+        request = self.request
+        passed_id = self.kwargs["desk_id"]
+        # print(passed_id)
+        # query_set = self.get_queryset()
+        obj = Desk.objects.prefetch_related("permissionrow_set").prefetch_related("columns__tasks__comments").get(id=passed_id)
+        print(obj)
+        #self.check_object_permissions(request, obj)
+        return obj
 
     def put(self, request, *args, **kwargs):
         """Update the Desk(Only Desk, not Comments or Columns or Tasks)"""
