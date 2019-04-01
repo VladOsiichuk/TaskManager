@@ -9,7 +9,7 @@ from user_auth.models import UsersDesks, CustomGroup
 from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
-
+from user_auth.models import User
 
 # class DeskDetailApiView(viewsets.ViewSet, HttpResponseMixin, viewsets.GenericViewSet):
 #     """
@@ -99,15 +99,6 @@ from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
 #         return Response(serializer.data)
 
 
-def is_json(json_data):
-    try:
-        real_json = json.loads(json_data)
-        is_valid = True
-    except ValueError:
-        is_valid = False
-    return is_valid
-
-
 class DeskAPIView(generics.ListAPIView,
                   mixins.CreateModelMixin,
                   ):
@@ -115,6 +106,8 @@ class DeskAPIView(generics.ListAPIView,
     authentication_classes = [SessionAuthentication]
     serializer_class = DeskSerializer
     queryset = Desk.objects.all()
+    lookup_field = 'id'
+    lookup_url_kwarg = 'desk_id'
 
     def perform_create(self, serializer):
         return serializer.save(author=self.request.user)
@@ -124,13 +117,13 @@ class DeskAPIView(generics.ListAPIView,
     #         return instance.delete()
     #     return None
 
-    # def get_queryset(self):
-    #     request = self.request
-    #     qs = Desk.objects.all()
-    #     query = request.GET.get('q')
-    #     if query is not None:
-    #         qs = qs.filter(content__icontatins=query)
-    #     return qs
+    def get_queryset(self):
+        request = self.request
+
+        # Show only Desks in which user is participant
+        users_qs = Desk.objects.filter(permissionrow__user=request.user)
+
+        return users_qs
 
     # def get_object(self):
     #     request = self.request
@@ -154,6 +147,10 @@ class DeskAPIView(generics.ListAPIView,
     #     return Response(json_data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+        """
+        Create a new Desk. Everyone can create a desk. But user should be logged in.
+        """
+
         # create Desk object
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -211,14 +208,19 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
     queryset = Desk.objects.all()
     serializer_class = DeskSerializer
     lookup_field = 'id'
+    lookup_url_kwarg = 'desk_id'
 
     def put(self, request, *args, **kwargs):
+        """Update the Desk(Only Desk, not Comments or Columns or Tasks)"""
         return self.update(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
+        """Update the Desk(Only Desk, not Comments or Columns or Tasks)"""
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+        """Delete the board. Only ADMIN can delete board"""
+        self.permission_classes = [IsAdminOfDesk]
         return self.destroy(request, *args, **kwargs)
 
 

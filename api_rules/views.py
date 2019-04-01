@@ -7,6 +7,7 @@ from desk.model import Desk
 from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from user_auth.models import UsersDesks
 
 User = get_user_model()
 
@@ -22,6 +23,7 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
     serializer_class = AddUserToDeskSerializer
     queryset = Desk.objects.all()
     lookup_field = 'id'
+    lookup_url_kwarg = 'desk_id'
 
     def post(self, request, *args, **kwargs):
         """
@@ -48,6 +50,9 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
             return Response({"error": "This user already has a "
                                       "permission in selected group. use PUT "
                                       "method to change his permission"}, status=403)
+
+        rel = UsersDesks.objects.create(user_id=user_id, desks_id=obj.id)
+        rel.save()
 
         return Response({"message": f"successfully set user's permission to {set_permission}"}, status=200)
 
@@ -77,7 +82,7 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
 
     def delete(self, request, *args, **kwargs):
         """
-        Just provide user_id in json file in order to delete him from Desk
+        Just provide user_id in json format in order to delete him from Desk
         """
 
         obj = self.get_object()
@@ -90,7 +95,10 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
         user_id = request.data.get('user_id')
         perm = obj.permissionrow_set.filter(user_id=user_id).delete()
 
-        return Response({"message": "successfully deleted user from desk"})
+        # Remove record from UsersDesks table
+        rel_desk = obj.usersdesks_set.filter(user_id=user_id).delete()
+
+        return Response({"message": "successfully deleted user from desk"}, status=204)
 
     # def update(self, request, *args, **kwargs):
     #     #self.permission_classes = [IsEditorOfDesk]

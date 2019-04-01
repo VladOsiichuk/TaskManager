@@ -1,20 +1,6 @@
 from django.db import models
-
 from django.conf import settings
-import json
-
-
-class DeskQuerySet(models.QuerySet):
-
-    # def serialize(self):
-    #     list_values = list(self.values('author', 'name', 'description'))
-    #     return json.dumps(list_values)
-    pass
-
-
-class DeskManager(models.Manager):
-    def get_queryset(self):
-        return DeskQuerySet(self.model, using=self._db)
+from django.utils.timezone import now
 
 
 class Desk(models.Model):
@@ -29,8 +15,6 @@ class Desk(models.Model):
     name = models.CharField(max_length=64, help_text="Title of the Desk")
     description = models.TextField(max_length=500, help_text='Description of the Desk')
 
-    #objects = DeskManager()
-
     def __str__(self):
         return f"{self.name}"
 
@@ -38,20 +22,15 @@ class Desk(models.Model):
         verbose_name = "Desk post"
         verbose_name_plural = "Desk posts"
 
-    # def serialize(self):
-    #     data = {
-    #         "id": self.id,
-    #         "name": self.name,
-    #         "author": self.author.id,
-    #         "description": self.description
-    #     }
-    #
-    #     data = json.dumps(data)
-    #     return data
+    # This one is necessary to check if user is ADMIN(IsAdminOfDesk)
+    @property
+    def desk_author(self):
+        return self.author
 
 
 class Column(models.Model):
     """
+    class describing the Column of Desk
     @related_desk: board to which is related this one
     @author: who created this one
     @order_in_desk: the order of column in the desk
@@ -73,6 +52,11 @@ class Column(models.Model):
         verbose_name = "Column"
         verbose_name_plural = "Columns"
 
+    # This one is necessary to check if user is ADMIN(IsAdminOfDesk)
+    @property
+    def desk_author(self):
+        return self.related_desk.author
+
 
 class Task(models.Model):
     """
@@ -83,16 +67,22 @@ class Task(models.Model):
     @task_deadline: deadline of execution
     """
 
-    related_column = models.ForeignKey(Column, on_delete=models.CASCADE, help_text="ID of column for "
-                                                                                   "who Task is related")
-    current_executor = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                                            help_text="ID of user for who task is assigned")
+    related_column = models.ForeignKey(Column, related_name='tasks',
+                                       on_delete=models.CASCADE, help_text="ID of column for which Task is related")
+    current_executor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                         help_text="ID of user for who task is assigned")
     name = models.CharField(max_length=64, help_text='Title of the task')
     description = models.TextField(max_length=500, help_text='Description of the Task')
-    task_deadline = models.DateField(blank=True, help_text='Deadline of the task. format=Date(YYYY-MM-DD)')
+    task_deadline = models.DateField(default=now,
+                                     help_text='Deadline of the task. format=Date(MM-DD-YYYY)')
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - " + self.description[:25] + "..."
+
+    # This one is necessary to check if user is ADMIN(IsAdminOfDesk)
+    @property
+    def desk_author(self):
+        return self.related_column.related_desk.author
 
 
 class Comment(models.Model):
@@ -103,17 +93,10 @@ class Comment(models.Model):
     """
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     comment_body = models.TextField(max_length=500, help_text='Comment text')
-    related_task = models.ForeignKey(Task, on_delete=models.CASCADE, help_text='ID of task for which'
-                                                                               ' this one is related')
+    related_task = models.ForeignKey(Task, related_name='comments',
+                                     on_delete=models.CASCADE, help_text='ID of task for which this one is related')
 
-    @property
-    def desk_name(self):
-        return self.related_task.related_column.related_desk.name
-
-    @property
-    def desk_id(self):
-        return self.related_task.related_column.related_desk.id
-
+    # This one is necessary to check if user is ADMIN(IsAdminOfDesk)
     @property
     def desk_author(self):
         return self.related_task.related_column.related_desk.author

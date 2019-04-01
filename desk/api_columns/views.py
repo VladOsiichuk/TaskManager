@@ -15,22 +15,22 @@ class ColumnAPIView(generics.CreateAPIView,
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     serializer_class = ColumnSerializer
-    lookup_field = 'pk'
-    lookup_url_kwarg = 'id'
+    lookup_field = 'id'
+    lookup_url_kwarg = 'column_id'
     queryset = Column.objects.all()
 
     def get_queryset(self, *args, **kwargs):
-        print(self.kwargs['id'])
-        return self.queryset.filter(related_desk_id=self.kwargs['id'])
+        #print(self.kwargs['id'])
+        return self.queryset.filter(related_desk_id=self.kwargs['desk_id'])
 
     def perform_create(self, serializer):
-        desk_id = self.kwargs["id"]
+        desk_id = self.kwargs["desk_id"]
         return serializer.save(author=self.request.user, related_desk_id=desk_id)
 
     def post(self, request, *args, **kwargs):
 
         # check if user has access to create a new desk
-        desk = Desk.objects.get(id=self.kwargs["id"])
+        desk = Desk.objects.get(id=self.kwargs["desk_id"])
         self.check_object_permissions(request, desk)
 
         # create Column object
@@ -51,10 +51,12 @@ class ColumnDetailAPIView(mixins.UpdateModelMixin,
     authentication_classes = [SessionAuthentication]
     queryset = Column.objects.all()
     serializer_class = ColumnSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'column_id'
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.related_desk_id != self.kwargs["id"]:
+        if instance.related_desk_id != self.kwargs["desk_id"]:
             return Response({"detail": "not found"}, status=404)
 
         serializer = self.get_serializer(instance)

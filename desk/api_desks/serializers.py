@@ -5,7 +5,7 @@ from desk.api_columns.serializers import ColumnSerializer
 
 
 class DeskSerializer(serializers.ModelSerializer):
-    columns =ColumnSerializer(many=True, read_only=True)
+    columns = ColumnSerializer(many=True, read_only=True)
 
     class Meta:
         model = Desk
