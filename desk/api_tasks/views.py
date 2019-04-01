@@ -17,11 +17,12 @@ class TaskAPIView(generics.CreateAPIView,
     serializer_class = CreateTaskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'task_id'
-    queryset = Task.objects.all()
+#    queryset = Task.objects.all()
 
     def get_queryset(self, *args, **kwargs):
         #print(self.kwargs['id'])
-        return self.queryset.filter(related_column_id=self.kwargs['column_id'])
+        qs = Task.objects.select_related('related_column__related_desk').filter(related_column_id=self.kwargs['column_id'])
+        return qs #self.queryset.filter(related_column_id=self.kwargs['column_id'])
 
     def perform_create(self, serializer):
         column_id = self.kwargs["column_id"]

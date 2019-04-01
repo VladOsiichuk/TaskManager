@@ -72,11 +72,10 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
         serializer.is_valid(raise_exception=True)
 
         # self.check_object_permissions(request, obj)
-        data = request.data
         set_permission = request.data.get('set_to_permission')
         user_id = request.data.get('user_id')
 
-        perm = obj.permissionrow_set.filter(user_id=user_id).update(permission=set_permission)
+        obj.permissionrow_set.filter(user_id=user_id).update(permission=set_permission)
 
         return Response({"message": "successfully updated"}, status=200)
 
