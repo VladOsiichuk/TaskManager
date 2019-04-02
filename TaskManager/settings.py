@@ -65,7 +65,7 @@ QUERYCOUNT = {
     },
     'IGNORE_REQUEST_PATTERNS': [],
     'IGNORE_SQL_PATTERNS': [],
-    'DISPLAY_DUPLICATES': 5,
+    'DISPLAY_DUPLICATES': None,
     'RESPONSE_HEADER': 'X-DjangoQueryCount-Count'
 }
 
@@ -85,6 +85,8 @@ TEMPLATES = [
         },
     },
 ]
+
+DEBUG_SQL = True
 
 WSGI_APPLICATION = 'TaskManager.wsgi.application'
 

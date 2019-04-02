@@ -10,6 +10,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
 from user_auth.models import User
+from debug.db_queries import DbQueries
+LOCAL_DEBUG_SQL = True
 
 # class DeskDetailApiView(viewsets.ViewSet, HttpResponseMixin, viewsets.GenericViewSet):
 #     """
@@ -215,25 +217,29 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
                         ):
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
- #   queryset = Desk.objects.prefetch_related("permissionrow_set").all()
+    #queryset = Desk.objects.prefetch_related("columns__tasks__comments").prefetch_related("permissionrow_set").all()
     serializer_class = DeskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
 
-    def get_queryset(self):
-        desk_id = self.kwargs["desk_id"]
-        #print(desk_id)
-        qs = Desk.objects.prefetch_related('columns__tasks__comments').filter(id=desk_id).first()
-        return qs
-
+    # def get_queryset(self):
+    #     desk_id = self.kwargs["desk_id"]
+    #     #print(desk_id)
+    #     qs = Desk.objects.prefetch_related('columns__tasks__comments').filter(id=desk_id).first()
+    #     return qs
+    #
     def get_object(self):
+        DbQueries.show(l_dbg_sql=LOCAL_DEBUG_SQL, view=DeskDetailAPIView)
         request = self.request
         passed_id = self.kwargs["desk_id"]
         # print(passed_id)
         # query_set = self.get_queryset()
-        obj = Desk.objects.prefetch_related("permissionrow_set").prefetch_related("columns__tasks__comments").get(id=passed_id)
-        print(obj)
+        #obj = self.queryset.filter(id=passed_id).first()
+        obj = Desk.objects.select_related("")
+        print(obj.permissionrow_set)#.objects.prefetch_related("permissionrow_set").get(id=passed_id)
+        print(type(obj))
         #self.check_object_permissions(request, obj)
+        #obj = Desk.objects.prefetch_related("columns__tasks__comments").get(id=passed_id)
         return obj
 
     def put(self, request, *args, **kwargs):
@@ -248,6 +254,5 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
         """Delete the board. Only ADMIN can delete board"""
         self.permission_classes = [IsAdminOfDesk]
         return self.destroy(request, *args, **kwargs)
-
 
 #class AddUserWithPermissionsAPIView(generics)
