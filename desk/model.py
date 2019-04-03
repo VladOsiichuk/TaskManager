@@ -58,6 +58,10 @@ class Column(models.Model):
         return self.related_desk.author
 
 
+def upload_task_image(instance, filename):
+    return "uploads/tasks/{filename}".format(filename=filename)
+
+
 class Task(models.Model):
     """
     @author: who created this one
@@ -76,6 +80,14 @@ class Task(models.Model):
     task_deadline = models.DateField(default=now,
                                      help_text='Deadline of the task. format=Date(MM-DD-YYYY)')
 
+    image = models.ImageField(upload_to=upload_task_image, blank=True, null=True)
+    priority_choices = [
+        ("Високий", "HIGH"),
+        ("Середній", "MEDIUM"),
+        ("Низький", "LOW"),
+    ]
+    priority = models.CharField(max_length=8, choices=priority_choices, default="Середній")
+
     def __str__(self):
         return f"{self.name} - " + self.description[:25] + "..."
 
@@ -83,6 +95,10 @@ class Task(models.Model):
     @property
     def desk_author(self):
         return self.related_column.related_desk.author
+
+
+def upload_comment_image(instance, filename):
+    return "uploads/comments/{filename}".format(filename=filename)
 
 
 class Comment(models.Model):
@@ -96,10 +112,15 @@ class Comment(models.Model):
     related_task = models.ForeignKey(Task, related_name='comments',
                                      on_delete=models.CASCADE, help_text='ID of task for which this one is related')
 
+    image = models.ImageField(upload_to=upload_comment_image, null=True, blank=True)
+
+    is_child = models.BooleanField(default=False)
+
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
+                               related_name='related_comment')
+
     # This one is necessary to check if user is ADMIN(IsAdminOfDesk)
     @property
     def desk_author(self):
         return self.related_task.related_column.related_desk.author
 
-    # TODO
-    # after add fields for img attaching or video attaching

@@ -18,6 +18,9 @@ from rest_framework.documentation import include_docs_urls
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
+from django.conf.urls.static import static
+from django.conf import settings
+
 from rest_framework import routers
 #from desk.api_desks.views import DeskDetailApiView, DeskModelListApiView
 
@@ -28,11 +31,12 @@ from rest_framework import routers
 
 
 urlpatterns = [
+
     path('admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='API documentation', public=False)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api_user/', include('user_auth.urls')),
+    path('api-users/', include('user_auth.urls')),
     path('api-desks/', include('desk.api_desks.urls')),
     #path('api_columns/', include('desk.api_columns.urls'))
     #url('api_rules/', include('api_rules.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

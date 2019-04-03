@@ -59,7 +59,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
 
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
-    queryset = Task.objects.all()
+    queryset = Task.objects.all().prefetch_related("comments__author")
     lookup_field = 'id'
     lookup_url_kwarg = 'task_id'
     serializer_class = UpdateTaskSerializer
@@ -70,6 +70,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Column with ID=column_id then 404 error
         """
         instance = self.get_object()
+        #instance = Task.objects.select_related("related_column").prefetch_related("comments__parent__author").filter(id=self.kwargs[self.lookup_url_kwarg]).first()
         if instance.related_column_id != self.kwargs["column_id"]:
             return Response({"detail": "not found"}, status=404)
 
