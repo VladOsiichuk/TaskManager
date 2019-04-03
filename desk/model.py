@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
+from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Desk(models.Model):
@@ -101,7 +102,7 @@ def upload_comment_image(instance, filename):
     return "uploads/comments/{filename}".format(filename=filename)
 
 
-class Comment(models.Model):
+class Comment(MPTTModel):
     """
     @author: who created comment
     @comment_body: comment
@@ -116,7 +117,7 @@ class Comment(models.Model):
 
     is_child = models.BooleanField(default=False)
 
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
                                related_name='related_comment')
 
     # This one is necessary to check if user is ADMIN(IsAdminOfDesk)

@@ -15,11 +15,11 @@ class CommentAPIView(
     serializer_class = CommentSerializer
     #lookup_field = 'id'
     #lookup_url_kwarg = 'comment_id'
-    #queryset = Comment.objects.all()
+    queryset = Comment.objects.prefetch_related("parent").all()
 
     def get_queryset(self, *args, **kwargs):
 
-        return Comment.objects.prefetch_related("parent").filter(related_task_id=self.kwargs['task_id'], is_child=False)
+        return Comment.objects.filter(related_task_id=self.kwargs['task_id'], is_child=False)
 
     # def perform_create(self, serializer):
     #     task_id = self.kwargs["task_id"]

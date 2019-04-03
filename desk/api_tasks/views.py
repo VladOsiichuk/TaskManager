@@ -20,9 +20,10 @@ class TaskAPIView(generics.CreateAPIView,
 #    queryset = Task.objects.all()
 
     def get_queryset(self, *args, **kwargs):
+
         #print(self.kwargs['id'])
-        qs = Task.objects.select_related('related_column__related_desk').filter(related_column_id=self.kwargs['column_id'])
-        return qs #self.queryset.filter(related_column_id=self.kwargs['column_id'])
+        qs = Task.objects.prefetch_related('comments').filter(related_column_id=self.kwargs['column_id'])
+        return qs # self.queryset.filter(related_column_id=self.kwargs['column_id'])
 
     def perform_create(self, serializer):
         column_id = self.kwargs["column_id"]
@@ -59,18 +60,25 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
 
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
+
     queryset = Task.objects.all().prefetch_related("comments__author")
+
     lookup_field = 'id'
     lookup_url_kwarg = 'task_id'
     serializer_class = UpdateTaskSerializer
+    # prefetch_related("comments")
+
+    def get_queryset(self):
+        return Task.objects.select_related("related_column__related_desk").filter(id=self.kwargs['task_id'])
 
     def get(self, request, *args, **kwargs):
         """
         Get information about task with ID=task_id. If Task is not related to the
         Column with ID=column_id then 404 error
         """
-        instance = self.get_object()
-        #instance = Task.objects.select_related("related_column").prefetch_related("comments__parent__author").filter(id=self.kwargs[self.lookup_url_kwarg]).first()
+
+        instance = Task.objects.prefetch_related("related_column").filter(id=self.kwargs["task_id"]).first()
+
         if instance.related_column_id != self.kwargs["column_id"]:
             return Response({"detail": "not found"}, status=404)
 
@@ -89,15 +97,15 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         # Check if selected column is related to the Current Desk
         desk_id = self.kwargs["desk_id"]
         related_column_id = int(request.data['related_column'])
-        print(related_column_id, desk_id)
-        col = Column.objects.get(id=related_column_id)
+        #print(related_column_id, desk_id)
+        col = Column.objects.select_related("related_desk").get(id=related_column_id)  #get(id=related_column_id)
 
         # if desk_id is not the same as related_desk_id then return Bad Response
         if col.related_desk_id != desk_id:
             return Response({"Message": f"Selected column(ID={related_column_id})"
                             f" is not related to the desk with ID={related_column_id}"}, status=400)
 
-        instance = self.get_object()
+        instance = Task.objects.prefetch_related("comments").filter(id=self.kwargs["task_id"]).first()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
