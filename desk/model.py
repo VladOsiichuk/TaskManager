@@ -102,7 +102,7 @@ def upload_comment_image(instance, filename):
     return "uploads/comments/{filename}".format(filename=filename)
 
 
-class Comment(MPTTModel):
+class Comment(models.Model):
     """
     @author: who created comment
     @comment_body: comment
@@ -117,7 +117,7 @@ class Comment(MPTTModel):
 
     is_child = models.BooleanField(default=False)
 
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
                                related_name='related_comment')
 
     # This one is necessary to check if user is ADMIN(IsAdminOfDesk)

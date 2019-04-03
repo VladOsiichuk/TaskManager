@@ -38,7 +38,7 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
         if isinstance(obj, Desk):
             try:
                 print(type(request.user))
-                user_set = obj.permissionrow_set.get(user=request.user)
+                user_set = obj.permissionrow_set.filter(user=request.user).first()
                 print(user_set, type(user_set))
             except PermissionRow.DoesNotExist:
                 print("sadfadfsdf")
@@ -46,7 +46,7 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
 
         if isinstance(obj, Column):
 
-            user_set = obj.related_desk.permissionrow_set.get(user=request.user)
+            user_set = obj.related_desk.permissionrow_set.filter(user=request.user).first()
 
         if isinstance(obj, Task):
 
@@ -54,14 +54,13 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
             if request.user == obj.current_executor:
                 return True
 
-            user_set = obj.related_column.related_desk.permissionrow_set.all()
+            user_set = obj.related_column.related_desk.permissionrow_set.filter(user=request.user).first()
 
         if isinstance(obj, Comment):
             user_set = obj.related_task.related_column.related_desk.permissionrow_set.all()
 
-        user_perm = user_set#.filter(user=request.user).first()
-        if user_perm:
-            return permission_dict[user_perm.permission] > 1
+        if user_set is not None:
+            return permission_dict[user_set.permission] > 1
 
         return False
 

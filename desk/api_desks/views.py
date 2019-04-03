@@ -235,10 +235,10 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
         # print(passed_id)
         # query_set = self.get_queryset()
         #obj = self.queryset.filter(id=passed_id).first()
-        obj = Desk.objects.select_related("")
-        print(obj.permissionrow_set)#.objects.prefetch_related("permissionrow_set").get(id=passed_id)
+        obj = Desk.objects.prefetch_related("columns__tasks__comments").get(id=passed_id)
+        #print(obj.permissionrow_set)#.objects.prefetch_related("permissionrow_set").get(id=passed_id)
         print(type(obj))
-        #self.check_object_permissions(request, obj)
+        self.check_object_permissions(request, obj)
         #obj = Desk.objects.prefetch_related("columns__tasks__comments").get(id=passed_id)
         return obj
 

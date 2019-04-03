@@ -69,7 +69,9 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
     # prefetch_related("comments")
 
     def get_queryset(self):
-        return Task.objects.select_related("related_column__related_desk").filter(id=self.kwargs['task_id'])
+        #desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
+        #self.check_object_permissions(self.request, desk)
+        return Task.objects.prefetch_related("comments__parent").filter(id=self.kwargs['task_id']) #select_related("related_column__related_desk").
 
     def get(self, request, *args, **kwargs):
         """
@@ -77,7 +79,9 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Column with ID=column_id then 404 error
         """
 
-        instance = Task.objects.prefetch_related("related_column").filter(id=self.kwargs["task_id"]).first()
+        instance = Task.objects.filter(id=self.kwargs["task_id"]).first()
+
+        self.check_object_permissions(self.request, instance)
 
         if instance.related_column_id != self.kwargs["column_id"]:
             return Response({"detail": "not found"}, status=404)

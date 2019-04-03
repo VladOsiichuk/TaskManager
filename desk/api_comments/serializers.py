@@ -9,6 +9,18 @@ class RecursiveField(serializers.Serializer):
         serializer = self.parent.parent.__class__(value, context=self.context)
         return serializer.data
 
+class ChildrenCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'author',
+            'related_task',
+            'image',
+            'comment_body',
+            'is_child',
+        ]
+
 
 # class to create New tasks
 class CommentSerializer(serializers.ModelSerializer):
@@ -33,6 +45,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'related_task',
             'author',
         ]
+
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):

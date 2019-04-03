@@ -8,18 +8,26 @@ from rest_framework.response import Response
 
 
 class CommentAPIView(
-                     generics.ListAPIView
+                     generics.ListAPIView,
+                     #generics.RetrieveAPIView,
                      ):
+
+
     permission_classes = [permissions.IsAuthenticated, IsStaffOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     serializer_class = CommentSerializer
-    #lookup_field = 'id'
-    #lookup_url_kwarg = 'comment_id'
-    queryset = Comment.objects.prefetch_related("parent").all()
+    lookup_field = 'id'
+    lookup_url_kwarg = 'comment_id'
+    #queryset = Comment.objects.prefetch_related("parent__parent__parent__parent").all()
 
+    #def get_object(self):
+    #    obj = Comment.objects.all()
+#
     def get_queryset(self, *args, **kwargs):
-
-        return Comment.objects.filter(related_task_id=self.kwargs['task_id'], is_child=False)
+        desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
+        self.check_object_permissions(self.request, desk)
+        return Comment.objects.prefetch_related("related_comment__related_comment").filter(related_task_id=self.kwargs['task_id'],
+                                                                                           is_child=False)
 
     # def perform_create(self, serializer):
     #     task_id = self.kwargs["task_id"]

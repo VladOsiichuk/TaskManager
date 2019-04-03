@@ -17,11 +17,14 @@ class ColumnAPIView(generics.CreateAPIView,
     serializer_class = ColumnSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'column_id'
-    queryset = Column.objects.all()
+    #queryset = Column.objects.prefetch_related("tasks__comments__related_comment").all()
 
     def get_queryset(self, *args, **kwargs):
         #print(self.kwargs['id'])
-        return self.queryset.filter(related_desk_id=self.kwargs['desk_id'])
+        desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
+        self.check_object_permissions(self.request, desk)
+        qs = Column.objects.prefetch_related("tasks__comments__related_comment").filter(related_desk_id=self.kwargs['desk_id'])
+        return qs
 
     def perform_create(self, serializer):
         desk_id = self.kwargs["desk_id"]
@@ -55,7 +58,7 @@ class ColumnDetailAPIView(mixins.UpdateModelMixin,
     lookup_url_kwarg = 'column_id'
 
     def get(self, request, *args, **kwargs):
-        instance = Column.objects.prefetch_related("tasks__comments")\
+        instance = Column.objects.prefetch_related("tasks__comments__related_comment")\
             .get(id=self.kwargs['column_id'])
 
         #select_related("related_desk").filter(id=self.kwargs["column_id"]).first()
