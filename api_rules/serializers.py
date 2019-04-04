@@ -43,8 +43,6 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 class UpdatePermissionRowSerializer(serializers.ModelSerializer):
 
-    #email = serializers.EmailField(help_text='email of the user', write_only=True)
-
     class Meta:
         model = PermissionRow
         fields = [
@@ -58,4 +56,3 @@ class UpdatePermissionRowSerializer(serializers.ModelSerializer):
         if value.upper() != "STAFF" and value.upper() != "EDITOR":
             raise serializers.ValidationError("Permission should be STAFF or EDITOR")
         return value
-

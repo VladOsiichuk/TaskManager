@@ -1,15 +1,19 @@
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
-from django.contrib.auth import get_user_model, login, logout, authenticate
-
-
-# class UserSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = get_user_model()
-#         fields = ('username', 'password', 'email', 'first_name', 'last_name')
 
 User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Class to represent users in json data"""
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'username',
+            'first_name',
+            'last_name'
+        ]
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

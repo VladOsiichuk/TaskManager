@@ -64,8 +64,9 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
         ]
 
     def get_comments_url(self, obj):
-        request = self.context.get("request")
-        return request.path + "comments/"
+        desk_id = obj.related_column.related_desk.id
+        column_id = obj.related_column.id
+        return f"/api-deks/{desk_id}/columns/{column_id}/tasks/{obj.id}/comments/"
 
     # Check if deadline is later or equal to today's date
     def validate_task_deadline(self, value):

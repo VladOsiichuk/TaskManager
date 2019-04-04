@@ -5,7 +5,7 @@ from desk.api_tasks.serializers import CreateTaskSerializer, UpdateTaskSerialize
 
 
 class ColumnSerializer(serializers.ModelSerializer):
-    tasks = CreateTaskSerializer(many=True, read_only=True)
+    tasks = UpdateTaskSerializer(many=True, read_only=True)
 
     class Meta:
         model = Column

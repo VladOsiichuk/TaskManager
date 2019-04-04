@@ -1,5 +1,5 @@
 from django.db import IntegrityError
-from .permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher, IsStaffOfDeskOrHigher
+from .permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
 from .serializers import UpdatePermissionRowSerializer, PermissionSerializer
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import generics
@@ -13,9 +13,7 @@ from user_auth.models import UsersDesks
 User = get_user_model()
 
 
-class SetUsersPermissionsAPIView(#generics.UpdateAPIView,
-                                 #generics.DestroyAPIView,
-                                 generics.CreateAPIView,
+class SetUsersPermissionsAPIView(generics.CreateAPIView,
                                  generics.ListAPIView
                                  ):
 
@@ -23,27 +21,21 @@ class SetUsersPermissionsAPIView(#generics.UpdateAPIView,
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     serializer_class = PermissionSerializer
     queryset = PermissionRow.objects.prefetch_related("related_desk").select_related("user").all()
-    lookup_field = 'id'
-    lookup_url_kwarg = 'desk_id'
 
     def get_queryset(self):
         qs = self.queryset.filter(related_desk_id=self.kwargs["desk_id"])
-        print(qs)
 
         # check if user has permissions to see these permission rows
-        perm = qs.filter(user_id=self.request.user).first()
+        #perm = qs.filter(user_id=self.request.user).first()
 
-        if perm is None:
-            return Response({"detail": "You do not have permission to perform this action"}, status=403)
+        # if perm is None:
+        #     return Response({"detail": "You do not have permission to perform this action"}, status=403)
 
         return qs
 
     def get(self, request, *args, **kwargs):
-
+        print(request.path)
         queryset = self.get_queryset()
-
-        if isinstance(queryset, Response):
-            return queryset
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -108,6 +100,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         return obj
 
     def put(self, request, *args, **kwargs):
+        """Use PATCH method in order to update permissions"""
         return Response({"message": "Use PATCH method in order to update permissions"}, status=405)
 
     def patch(self, request, *args, **kwargs):

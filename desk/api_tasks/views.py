@@ -79,7 +79,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Column with ID=column_id then 404 error
         """
 
-        instance = Task.objects.filter(id=self.kwargs["task_id"]).first()
+        instance = Task.objects.select_related("related_column__related_desk").filter(id=self.kwargs["task_id"]).first()
 
         self.check_object_permissions(self.request, instance)
 
