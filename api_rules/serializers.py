@@ -1,73 +1,61 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import PermissionRow
-from user_auth.models import CustomGroup
-from desk.model import Desk
-from user_auth.serializers import UserRegisterSerializer
-from desk.api_desks.serializers import DeskSerializer
-from user_auth.serializers import CustomGroupSerializer
+
 User = get_user_model()
 
 
-class UpdateUserPermissionsSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField(help_text='INT. ID of user for who to change permissions ')
-    desk_id = serializers.IntegerField(help_text='INT. ID of Desk for who to change user\'s permissions')
-    change_to_permission = serializers.CharField(help_text='STRING. Name of permission(EDITOR or STAFF)')
-    change_from_permission = serializers.CharField(default=None,
-                                                   help_text='If user already have some rules in tnis Desk, '
-                                                             'then provide his previous permission')
+class PermissionSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(help_text='email of the user', write_only=True)
 
-
-class AddUserToDeskSerializer(serializers.ModelSerializer):
-
-    #user_id = serializers.IntegerField(help_text='INT. ID of user for who to change permissions ')
-    #desk_id = serializers.IntegerField(help_text='INT. ID of Desk for who to change user\'s permissions')
-    set_to_permission = serializers.CharField(help_text='Enter STAFF or EDITOR', write_only=True)#CustomGroupSerializer(many=True, read_only=True)
-    user_id = serializers.IntegerField(help_text='ID of the user', write_only=True)
-    #set_permission = serializers.CharField(help_text='Name of the desk')
-    #user = UserRegisterSerializer(many=True)
-    #group_set = serializers.SerializerMethodField()
-    #add_to = serializers.CharField(help_text='STAFF/EDITORS')
-    #participants = UserRegisterSerializer(read_only=True)
     class Meta:
-        model = Desk
+        model = PermissionRow
         fields = [
             'id',
-            #'permission',
-            #'author',
-            #'related_desk'
-            #'related_desk'
-            #'username',
-            #'add_to'
-            #'email',
-            #'related_desk',
-            #'participants',
-            'user_id',
-            #'desk_id',
-            #'customgroup_set',
-            #'group_set',
-            #'add_to_permission',
-            'set_to_permission',
+            'email',
+            'permission',
         ]
 
-    def validate_set_to_permission(self, value):
+    @staticmethod
+    def validate_email(value):
+        print("FROM VALIDATE", value)
+        user = User.objects.filter(email=value).first()
+        if user is None:
+            raise serializers.ValidationError("User with this email does not exist")
+
+        # return user id in order to create a new PermissionRow
+        return user.id
+
+    @staticmethod
+    def validate_permission(value):
         if value.upper() != "STAFF" and value.upper() != "EDITOR":
             raise serializers.ValidationError("Permission should be STAFF or EDITOR")
         return value
 
-    def validate_user_id(self, value):
-        if not isinstance(value, int):
-            raise serializers.ValidationError("user_id should be integer")
+    def create(self, validated_data):
+
+        obj = PermissionRow.objects.create(user_id=validated_data['email'],
+                                           permission=validated_data['permission'],
+                                           related_desk_id=validated_data['related_desk_id'])
+        obj.save()
+        return obj
+
+
+class UpdatePermissionRowSerializer(serializers.ModelSerializer):
+
+    #email = serializers.EmailField(help_text='email of the user', write_only=True)
+
+    class Meta:
+        model = PermissionRow
+        fields = [
+            'id',
+            'user',
+            'permission'
+        ]
+
+    @staticmethod
+    def validate_permission(value):
+        if value.upper() != "STAFF" and value.upper() != "EDITOR":
+            raise serializers.ValidationError("Permission should be STAFF or EDITOR")
         return value
 
-    #     return value
-    # def create(self, validated_data):
-    #     pass
-    # # def get_group_set(self, obj):
-    #     request = self.context.get('request')
-    #     #print(request)
-    #     #srl = CustomGroupSerializer()
-    #     #qs = obj.desk_set.all()
-    #     groups = obj.customgroup_set.all()
-    #     data = CustomGroupSerializer(groups, many=True, context={'request': request}).data
-    #     return data

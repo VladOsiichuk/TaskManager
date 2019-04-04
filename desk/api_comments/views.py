@@ -7,21 +7,15 @@ from api_rules.permissions import IsStaffOfDeskOrHigher
 from rest_framework.response import Response
 
 
-class CommentAPIView(
-                     generics.ListAPIView,
-                     #generics.RetrieveAPIView,
+class CommentAPIView(generics.ListAPIView,
                      ):
-
 
     permission_classes = [permissions.IsAuthenticated, IsStaffOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     serializer_class = CommentSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'comment_id'
-    #queryset = Comment.objects.prefetch_related("parent__parent__parent__parent").all()
 
-    #def get_object(self):
-    #    obj = Comment.objects.all()
 #
     def get_queryset(self, *args, **kwargs):
         desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
@@ -70,9 +64,6 @@ class CreateCommentAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsStaffOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     serializer_class = CreateCommentSerializer
-    # lookup_field = 'id'
-    # lookup_url_kwarg = 'comment_id'
-    #queryset = Comment.objects.all()
 
     def perform_create(self, serializer):
         task_id = self.kwargs["task_id"]
@@ -96,4 +87,3 @@ class CreateCommentAPIView(generics.CreateAPIView):
 
         # return success response
         return Response(serializer.data, status=201)
-

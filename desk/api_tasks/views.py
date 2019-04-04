@@ -71,7 +71,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
     def get_queryset(self):
         #desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
         #self.check_object_permissions(self.request, desk)
-        return Task.objects.prefetch_related("comments__parent").filter(id=self.kwargs['task_id']) #select_related("related_column__related_desk").
+        return Task.objects.filter(id=self.kwargs['task_id']) #select_related("related_column__related_desk").
 
     def get(self, request, *args, **kwargs):
         """

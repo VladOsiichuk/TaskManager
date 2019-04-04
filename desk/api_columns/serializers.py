@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from desk.model import Column
 from django.db import models
-from desk.api_tasks.serializers import CreateTaskSerializer
+from desk.api_tasks.serializers import CreateTaskSerializer, UpdateTaskSerializer
 
 
 class ColumnSerializer(serializers.ModelSerializer):

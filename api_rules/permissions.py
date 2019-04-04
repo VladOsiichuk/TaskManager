@@ -5,7 +5,7 @@ from api_rules.models import PermissionRow
 
 from desk.model import Desk, Column, Comment, Task
 from debug.db_queries import DbQueries
-LOCAL_DEBUG_SQL = True
+LOCAL_DEBUG_SQL = False
 
 permission_dict = {
     "STAFF": 1,
@@ -32,8 +32,14 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
+        print("CHECKING PERMISSIONS")
         DbQueries.show(l_dbg_sql=LOCAL_DEBUG_SQL)
         user_set = None
+
+        if isinstance(obj, PermissionRow):
+
+                user_set = PermissionRow.objects.prefetch_related("user")\
+                    .filter(related_desk=obj.related_desk, user=request.user).first()
 
         if isinstance(obj, Desk):
             try:
@@ -41,7 +47,6 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
                 user_set = obj.permissionrow_set.filter(user=request.user).first()
                 print(user_set, type(user_set))
             except PermissionRow.DoesNotExist:
-                print("sadfadfsdf")
                 return False
 
         if isinstance(obj, Column):
@@ -73,7 +78,11 @@ class IsStaffOfDeskOrHigher(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
 
         user_set = None
-        print(obj)
+
+        if isinstance(obj, PermissionRow):
+                user_set = PermissionRow.objects.prefetch_related("user")\
+                    .filter(related_desk=obj.related_desk, user=request.user).first()
+
         if isinstance(obj, Desk):
             user_set = obj.permissionrow_set.all()
 

@@ -7,7 +7,6 @@ from desk.model import Comment
 
 # class to create New tasks
 class CreateTaskSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Task
@@ -20,7 +19,6 @@ class CreateTaskSerializer(serializers.ModelSerializer):
             'current_executor',
             'priority',
             'image',
-            'comments'
         ]
 
         read_only_fields = [

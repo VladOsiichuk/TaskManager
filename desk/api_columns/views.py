@@ -20,11 +20,23 @@ class ColumnAPIView(generics.CreateAPIView,
     #queryset = Column.objects.prefetch_related("tasks__comments__related_comment").all()
 
     def get_queryset(self, *args, **kwargs):
-        #print(self.kwargs['id'])
-        desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
+
+        desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
         self.check_object_permissions(self.request, desk)
-        qs = Column.objects.prefetch_related("tasks__comments__related_comment").filter(related_desk_id=self.kwargs['desk_id'])
+
+        qs = Column.objects.prefetch_related("tasks__comments").filter(related_desk_id=self.kwargs['desk_id'])
         return qs
+
+    def get(self,  request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         desk_id = self.kwargs["desk_id"]
@@ -32,7 +44,7 @@ class ColumnAPIView(generics.CreateAPIView,
 
     def post(self, request, *args, **kwargs):
 
-        # check if user has access to create a new desk
+        # check if user has access to create a new column
         desk = Desk.objects.get(id=self.kwargs["desk_id"])
         self.check_object_permissions(request, desk)
 

@@ -1,8 +1,9 @@
 from django.db import IntegrityError
 from .permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher, IsStaffOfDeskOrHigher
-from .serializers import UpdateUserPermissionsSerializer, AddUserToDeskSerializer
+from .serializers import UpdatePermissionRowSerializer, PermissionSerializer
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import generics
+from .models import PermissionRow
 from desk.model import Desk
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -12,70 +13,124 @@ from user_auth.models import UsersDesks
 User = get_user_model()
 
 
-class SetUsersPermissionsAPIView(generics.UpdateAPIView,
+class SetUsersPermissionsAPIView(#generics.UpdateAPIView,
+                                 #generics.DestroyAPIView,
                                  generics.CreateAPIView,
-                                 generics.DestroyAPIView,
-                                 generics.GenericAPIView
+                                 generics.ListAPIView
                                  ):
 
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
-    serializer_class = AddUserToDeskSerializer
-    queryset = Desk.objects.all()
+    serializer_class = PermissionSerializer
+    queryset = PermissionRow.objects.prefetch_related("related_desk").select_related("user").all()
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
+
+    def get_queryset(self):
+        qs = self.queryset.filter(related_desk_id=self.kwargs["desk_id"])
+        print(qs)
+
+        # check if user has permissions to see these permission rows
+        perm = qs.filter(user_id=self.request.user).first()
+
+        if perm is None:
+            return Response({"detail": "You do not have permission to perform this action"}, status=403)
+
+        return qs
+
+    def get(self, request, *args, **kwargs):
+
+        queryset = self.get_queryset()
+
+        if isinstance(queryset, Response):
+            return queryset
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        desk_id = self.kwargs['desk_id']
+        return serializer.save(related_desk_id=desk_id)
 
     def post(self, request, *args, **kwargs):
         """
         Use this method in order to add a new user with some permission to Desk
         """
 
-        obj = self.get_object()
+        desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
 
-        if obj is None:
+        if desk is None:
             return Response({"error": f"desk with selected id does not exists"}, status=400)
 
-        serializer = self.get_serializer(obj, data=request.data)
+        # check if user has access to add new users to this desk
+        self.check_object_permissions(request, desk)
+
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        #self.check_object_permissions(request, obj)
-        data = request.data
-        set_permission = request.data.get('set_to_permission')
-        user_id = request.data.get('user_id')
-
+        obj = None
         try:
-            obj.permissionrow_set.create(user_id=user_id, permission=set_permission.upper())
+            obj = self.perform_create(serializer)
 
         except IntegrityError:
             return Response({"error": "This user already has a "
-                                      "permission in selected group. use PUT "
+                                      "permission in selected group. use PATCH"
                                       "method to change his permission"}, status=403)
 
-        rel = UsersDesks.objects.create(user_id=user_id, desks_id=obj.id)
+        headers = self.get_success_headers(serializer.data)
+
+        rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=desk.id)
         rel.save()
 
-        return Response({"message": f"successfully set user's permission to {set_permission}"}, status=200)
+        return Response(serializer.data, status=201, headers=headers)
 
-    def patch(self, request, *args, **kwargs):
-        return Response({"message": "Use PUT method in order to update permissions"}, status=400)
+
+class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
+                                    generics.DestroyAPIView,
+                                    ):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
+    serializer_class = UpdatePermissionRowSerializer
+    queryset = PermissionRow.objects.prefetch_related("related_desk").select_related("user").all()
+
+    def get_object(self):
+
+        #obj = #PermissionRow.objects.prefetch_related("user").select_related("related_desk") \
+        print(self.request.data)
+        obj = self.queryset.filter(related_desk_id=self.kwargs['desk_id'], user_id=self.request.data['user']).first()
+        self.check_object_permissions(self.request, obj)
+
+        return obj
 
     def put(self, request, *args, **kwargs):
+        return Response({"message": "Use PATCH method in order to update permissions"}, status=405)
+
+    def patch(self, request, *args, **kwargs):
         """
         Changes permissions of user in selected group
         """
+
         obj = self.get_object()
 
         if obj is None:
-            return Response({"error": f"desk with selected id does not exists"}, status=400)
+            return Response({"error": f"permission for this user does not exist"}, status=400)
+
+        if obj.permission == "ADMIN":
+            return Response({"detail": "You cannot change admin's role"}, status=403)
 
         serializer = self.get_serializer(obj, data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
 
-        # self.check_object_permissions(request, obj)
-        set_permission = request.data.get('set_to_permission')
-        user_id = request.data.get('user_id')
-
-        obj.permissionrow_set.filter(user_id=user_id).update(permission=set_permission)
+        if getattr(obj, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            obj._prefetched_objects_cache = {}
 
         return Response({"message": "successfully updated"}, status=200)
 
@@ -85,105 +140,19 @@ class SetUsersPermissionsAPIView(generics.UpdateAPIView,
         """
 
         obj = self.get_object()
-        serializer = self.get_serializer(obj, data=request.data)
-        serializer.is_valid(raise_exception=True)
 
         if obj is None:
-            return Response({"error": f"desk with selected id does not exists"}, status=400)
+            return Response({"detail": f"Permission for this user and desk does not exist"}, status=400)
 
-        user_id = request.data.get('user_id')
-        perm = obj.permissionrow_set.filter(user_id=user_id).delete()
+        if obj.permission == "ADMIN":
+            return Response({"detail": "You cannot delete admin user"}, status=403)
+
+        # Delete permission and user from desk
+        obj.delete()
+
+        user_id = request.data.get('user')
 
         # Remove record from UsersDesks table
         rel_desk = obj.usersdesks_set.filter(user_id=user_id).delete()
 
         return Response({"message": "successfully deleted user from desk"}, status=204)
-
-    # def update(self, request, *args, **kwargs):
-    #     #self.permission_classes = [IsEditorOfDesk]
-    #     partial = kwargs.pop('partial', False)
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_update(serializer)
-    #
-    #     if getattr(instance, '_prefetched_objects_cache', None):
-    #         # If 'prefetch_related' has been applied to a queryset, we need to
-    #         # forcibly invalidate the prefetch cache on the instance.
-    #         instance._prefetched_objects_cache = {}
-    #
-    #     return Response(serializer.data)
-    # def get_object(self):
-    #     id = self.request.GET.get('pk')
-    #     print(id)
-    #     #qs = Desk.objects.get(id=id).customgroup_set.all()
-    #     return CustomGroup.objects.first()
-    # def post(self, request, *args, **kwargs):
-    #     data = request.data
-    # def post(self, request, *args, **kwargs):
-    #     """
-    #     If you add user for the first time(It means user was not participant of this desk before)
-    #     then use POST method
-    #     """
-    #     data = request.data
-    #
-    #     user_id = data.get("user_id")
-    #     desk_id = data.get("desk_id")
-    #     add_to = data.get("change_to_permission")
-    #
-    #     desk = Desk.objects.filter(id=desk_id).first()
-    #
-    #     if not desk:
-    #         return Response({"error": "Desk with that name does not exists"}, status=400)
-    #
-    #     if desk.author_id == user_id:
-    #         return Response({"error": "You cannot change admin user role"}, status=403)
-    #
-    #     user = User.objects.filter(id=user_id).first()
-    #     part_group_name = desk.name + "_" + str(desk.id)
-    #     print(add_to.upper() + "_" + part_group_name)
-    #     participants_group = CustomGroup.objects.get(name="COMMON" + "_" + part_group_name)
-    #     group_to_add = CustomGroup.objects.get(name=add_to.upper() + "_" + part_group_name)
-    #
-    #     participants_group.user_set.add(user)
-    #     group_to_add.user_set.add(user)
-    #
-    #     return Response(status=200)
-    # def put(self, request, *args, **kwargs):
-    #     """
-    #     If you want to change user's rules in the desk (It means user is already
-    #     participant of this desk) then use PATCH method
-    #     """
-    #     data = request.data
-    #
-    #     user_id = data.get("user_id")
-    #     desk_id = data.get("desk_id")
-    #     change_from = data.get("change_from_permission")
-    #     change_to = data.get("change_to_permission")
-    #
-    #     desk = Desk.objects.filter(id=desk_id).first()
-    #
-    #     if not desk:
-    #         return Response({"error": "Desk with that id does not exists"}, status=400)
-    #
-    #     if desk.author_id == user_id:
-    #         return Response({"error": "You cannot change admin user role"}, status=403)
-    #
-    #     user = User.objects.filter(id=user_id).first()
-    #     part_group_name = desk.name + "_" + str(desk.id)
-    #
-    #     group_to_add = CustomGroup.objects.get(name=change_to.upper() + "_" + part_group_name)
-    #
-    #     delete_from_group = CustomGroup.objects.get(name=change_from.upper() + "_" + part_group_name)
-    #     delete_from_group.user_set.remove(user)
-    #
-    #     group_to_add.user_set.add(user)
-    #
-    #     return Response(status=200)
-    #
-    # def delete(self, request, *args, **kwargs):
-    #     """Just provide user_id and desk_id"""
-    #     data = request.data
-    #
-    #     user_id = data.get("user_id")
-    #     desk_id = data.get("desk_id")

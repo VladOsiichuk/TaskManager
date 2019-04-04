@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from django.contrib.auth import get_user_model, login, logout, authenticate
-from .models import CustomGroup
+
 
 # class UserSerializer(serializers.HyperlinkedModelSerializer):
 #     class Meta:
@@ -55,16 +55,4 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = [
             'email',
             'password'
-        ]
-
-
-class CustomGroupSerializer(serializers.ModelSerializer):
-    user_set = UserRegisterSerializer(many=True)
-
-    class Meta:
-        model = CustomGroup
-        fields = [
-            'name',
-            'related_desk',
-            'user_set'
         ]

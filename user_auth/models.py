@@ -20,26 +20,6 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
 
 
-class CustomGroup(Group):
-    """
-    @related_desk: desk to which group is related
-    """
-
-    related_desk = models.ForeignKey(Desk, on_delete=models.CASCADE, default=None)
-
-    @property
-    def desk_name(self):
-        return self.related_desk.name
-
-    @property
-    def desk_id(self):
-        return self.related_desk.id
-
-    @property
-    def desk_author(self):
-        return self.related_desk.author
-
-
 class UsersDesks(models.Model):
     """
     This one is created to get all desks in which user is participant
