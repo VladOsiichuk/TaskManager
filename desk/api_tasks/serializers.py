@@ -37,13 +37,6 @@ class CreateTaskSerializer(serializers.ModelSerializer):
 # class to update tasks
 class UpdateTaskSerializer(serializers.ModelSerializer):
     comments_url = serializers.SerializerMethodField(read_only=True)
-    # comments = serializers.HyperlinkedRelatedField(source=Comment.objects.filter(related_task=Task),
-    #                                                read_only=True,
-    #                                                many=True,
-    #                                                #view_name='dd'
-    #                                                #lookup_field='id'
-    #                                                )
-    #Task.objects.prefetch_related("comments")
 
     class Meta:
         model = Task
@@ -62,11 +55,12 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+        ordering = ['-id']
 
     def get_comments_url(self, obj):
         desk_id = obj.related_column.related_desk.id
         column_id = obj.related_column.id
-        return f"/api-deks/{desk_id}/columns/{column_id}/tasks/{obj.id}/comments/"
+        return f"/api-desks/{desk_id}/columns/{column_id}/tasks/{obj.id}/comments/"
 
     # Check if deadline is later or equal to today's date
     def validate_task_deadline(self, value):

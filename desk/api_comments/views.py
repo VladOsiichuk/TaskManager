@@ -16,47 +16,25 @@ class CommentAPIView(generics.ListAPIView,
     lookup_field = 'id'
     lookup_url_kwarg = 'comment_id'
 
-#
     def get_queryset(self, *args, **kwargs):
+        return Comment.objects.filter(related_task_id=self.kwargs['task_id'])
+
+    def get(self, request, *args, **kwargs):
+
         desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
         self.check_object_permissions(self.request, desk)
-        return Comment.objects.prefetch_related("related_comment__related_comment").filter(related_task_id=self.kwargs['task_id'],
-                                                                                           is_child=False)
 
-    # def perform_create(self, serializer):
-    #     task_id = self.kwargs["task_id"]
-    #     return serializer.save(related_task_id=task_id, author=self.request.user)
-    #
-    # def post(self, request, *args, **kwargs):
-    #
-    #     # check if user has access to create a new comment
-    #     task = Task.objects.prefetch_related("related_column__related_desk__permissionrow_set")
-    #     .get(id=self.kwargs["task_id"])
-    #
-    #     # if provided task id is incorrect
-    #     if not task:
-    #         return Response({"error": "provided task id is incorrect"}, status=400)
-    #
-    #     self.check_object_permissions(request, task)
-    #
-    #     # # Check if selected column is related to the Current Desk
-    #     # desk_id = self.kwargs["desk_id"]
-    #     # related_column_id = self.kwargs["desk_id"]
-    #     # col = Column.objects.get(id=related_column_id)
-    #     #
-    #     # # if desk_id is not the same as related_desk_id then return Bad Response
-    #     # if col.related_desk_id != desk_id:
-    #     #     return Response({"Message": f"Selected column(ID={related_column_id})"
-    #     #     f" is not related to the desk with ID={related_column_id}"}, status=400)
-    #
-    #     # create Task object
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #
-    #     self.perform_create(serializer)
-    #
-    #     # return success response
-    #     return Response(serializer.data, status=201)
+        queryset = self.filter_queryset(self.get_queryset()).filter(is_child=False)
+
+        page = self.paginate_queryset(queryset)
+        print(type(page))
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            print(type(serializer.data), len(serializer.data))
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class CreateCommentAPIView(generics.CreateAPIView):

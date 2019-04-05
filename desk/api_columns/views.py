@@ -17,23 +17,17 @@ class ColumnAPIView(generics.CreateAPIView,
     serializer_class = ColumnSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'column_id'
-    #queryset = Column.objects.prefetch_related("tasks__comments__related_comment").all()
+    queryset = Column.objects.prefetch_related("tasks__comments").all()
 
-    def get_queryset(self, *args, **kwargs):
+    # disable pagination
+    paginator = None
+
+    def get(self,  request, *args, **kwargs):
 
         desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
         self.check_object_permissions(self.request, desk)
 
-        qs = Column.objects.prefetch_related("tasks__comments").filter(related_desk_id=self.kwargs['desk_id'])
-        return qs
-
-    def get(self,  request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        queryset = self.queryset.filter(related_desk=desk)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

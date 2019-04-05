@@ -10,5 +10,6 @@ class ColumnSerializer(serializers.ModelSerializer):
     class Meta:
         model = Column
         fields = ['id', 'author', 'name', 'related_desk', 'created', 'tasks']
+        ordering = ['-id']
 
         read_only_fields = ['author', 'created', 'id', 'related_desk']

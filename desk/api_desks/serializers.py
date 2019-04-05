@@ -16,4 +16,5 @@ class DeskSerializer(serializers.ModelSerializer):
             'name',
             'columns',
         ]
-        read_only_fields = ['author']
+        ordering = ['-id']
+        read_only_fields = ['author', 'columns']
