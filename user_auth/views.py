@@ -50,7 +50,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class AuthView(generics.CreateAPIView):
+class AuthAPIView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
