@@ -1,12 +1,11 @@
-from django.conf import settings
-from rest_framework import viewsets, mixins
+from api_rules.permissions import PermissionRow
 from .serializers import UserRegisterSerializer, UserLoginSerializer, UserSerializer
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from rest_framework.views import APIView
-from django.db.models import Q
+from django.core.cache import cache
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
 from rest_framework import permissions
 
@@ -40,7 +39,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         email = request.POST["email"]
         password = request.POST["password"]
-
+        cache.set("username", email, DEFAULT_TIMEOUT)
         # login user
         user = authenticate(request, email=email, password=password)
 
@@ -51,6 +50,9 @@ class UserRegisterAPIView(generics.CreateAPIView):
 
 
 class AuthAPIView(generics.CreateAPIView):
+    """
+    View to login
+    """
     queryset = get_user_model().objects.all()
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
@@ -60,7 +62,7 @@ class AuthAPIView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         print(request.user.is_active)
         if request.user.is_active:
-            return Response({'error': 'user is already authenticated'}, status=400)
+            return Response({'detail': 'user is already authenticated'}, status=400)
 
         data = request.data
 
@@ -70,7 +72,15 @@ class AuthAPIView(generics.CreateAPIView):
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
+
+            user_perms = PermissionRow.objects.filter(user=user)
+            if user_perms.count() > 1:
+                # cache permissions
+                permission_dict = {perm.related_desk_id: perm.permission for perm in user_perms}
+
+                cache.set(user.id, permission_dict, DEFAULT_TIMEOUT)
+
             login(request, user)
-            return Response({"status": "Successfully authenticated. See cookie"}, status=200)
+            return Response({"detail": "Successfully authenticated. See cookie"}, status=200)
 
         return Response({"error": "invalid credentials"}, status=401)

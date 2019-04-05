@@ -152,6 +152,24 @@ REST_FRAMEWORK = {
     #     'rest_framework.permissions.IsAuthenticated',
     # )
 }
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# print(MEDIA_ROOT)
+
 MEDIA_URL = "/media/"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "TIMEOUT": 60 * 60,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_TIMEOUT": 5,
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            #"PASSWORD": "111"
+        }
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"

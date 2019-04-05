@@ -9,6 +9,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user_auth.models import UsersDesks
+from django.core.cache import cache
 
 User = get_user_model()
 
@@ -115,11 +116,22 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
 
         if obj.permission == "ADMIN":
             return Response({"detail": "You cannot change admin's role"}, status=403)
-
+        
         serializer = self.get_serializer(obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
+        
+        # update permission in cache if user's data is in memory
+        post_data = request.data
+        user_id = post_data['user']
+        data = cache.get(user_id)
+        
+        if data is not None: 
+            desk_id = self.kwargs['desk_id']
+            new_perm = post_data['permission']
+            data.update({desk_id: new_perm})
+            cache.set(user_id, data)
+            
         if getattr(obj, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
