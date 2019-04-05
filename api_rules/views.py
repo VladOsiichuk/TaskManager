@@ -144,6 +144,8 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         Just provide user_id in json format in order to delete him from Desk
         """
 
+        # TODO: Add functionality to remove user's permissions from cache
+
         obj = self.get_object()
 
         if obj is None:
@@ -152,12 +154,11 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         if obj.permission == "ADMIN":
             return Response({"detail": "You cannot delete admin user"}, status=403)
 
+        # Remove record from UsersDesks table
+        user_id = request.data.get('user')
+        rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete() 
+
         # Delete permission and user from desk
         obj.delete()
-
-        user_id = request.data.get('user')
-
-        # Remove record from UsersDesks table
-        rel_desk = obj.usersdesks_set.filter(user_id=user_id).delete()
 
         return Response({"message": "successfully deleted user from desk"}, status=204)

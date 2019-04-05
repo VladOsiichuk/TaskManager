@@ -48,82 +48,30 @@ class IsAdminOfDesk(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return check_base_permission(request, view, "ADMIN", 2)
-
-        
+ 
     def has_object_permission(self, request, view, obj):
-        return request.user == obj.desk_author
+        return check_base_permission(request, view, "ADMIN", 2)
 
 
 class IsEditorOfDeskOrHigher(permissions.BasePermission):
     """
     EDITOR user has the same permissions as ADMIN but cannot edit ADMIN role and DELETE Desk(weight: 2)
     """
-    def has_permission(self, request, view):
 
+    def has_permission(self, request, view):
         return check_base_permission(request, view, "EDITOR", 1)
 
     def has_object_permission(self, request, view, obj):
-        #print(cache.get(request.user.id))
-        user_perms = cache.get(request.user.id)
-        #perm = user_perms[]
-        print(request.parser_context.get('kwargs'))
-        return True
-        # if isinstance(obj, PermissionRow):
-        #         user_set = PermissionRow.objects.prefetch_related("user")\
-        #             .filter(related_desk=obj.related_desk, user=request.user).first()
-        #
-        # if isinstance(obj, Desk):
-        #     user_set = obj.permissionrow_set.filter(user=request.user).first()
-        #
-        # if isinstance(obj, Column):
-        #     user_set = obj.related_desk.permissionrow_set.filter(user=request.user).first()
-        #
-        # if isinstance(obj, Task):
-        #
-        #     # If task is assigned to this user then he can edit it regardless from permission
-        #     if request.user == obj.current_executor:
-        #         return True
-        #
-        #     user_set = obj.related_column.related_desk.permissionrow_set.filter(user=request.user).first()
-        #
-        # if isinstance(obj, Comment):
-        #     user_set = obj.related_task.related_column.related_desk.permissionrow_set.filter(user=request.user).first()
-
-        if user_set is not None:
-            return permission_dict[user_set.permission] > 1
-
-        return False
+        return check_base_permission(request, view, "EDITOR", 1)
 
 
 class IsStaffOfDeskOrHigher(permissions.BasePermission):
     """
     STAFF user has minimal permissions (weight: 1)
     """
+    
     def has_permission(self, request, view):
-
         return check_base_permission(request, view, "STAFF", 0)
 
     def has_object_permission(self, request, view, obj):
-
-        user_set = None
-
-        if isinstance(obj, PermissionRow):
-                user_set = PermissionRow.objects.prefetch_related("user")\
-                    .filter(related_desk=obj.related_desk, user=request.user).first()
-
-        if isinstance(obj, Desk):
-            user_set = obj.permissionrow_set.filter(user=request.user).first()
-
-        if isinstance(obj, Column):
-            user_set = obj.related_desk.permissionrow_set.filter(user=request.user).first()
-
-        if isinstance(obj, Task):
-            user_set = obj.related_column.related_desk.permissionrow_set.filter(user=request.user).first()
-
-        if isinstance(obj, Comment):
-            user_set = obj.related_task.related_column.related_desk.permissionrow_set.filter(user=request.user).first()
-
-        if user_set is not None:
-            return permission_dict[user_set.permission] > 0
-
-        return False
+        return check_base_permission(request, view, "STAFF", 0)
