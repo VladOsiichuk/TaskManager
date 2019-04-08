@@ -20,7 +20,7 @@ def check_base_permission(request, view, permission, weight):
     @weight: weight of the role(1, 2, 3)
     This one checks if user has permission to create column/task/comment for desk with id='kwargs['desk_id']'
     """
-    print("Works......")
+
     dict = request.parser_context.get('kwargs')
     print(cache.get(request.user.id))
     # If DESK object is requested else return True

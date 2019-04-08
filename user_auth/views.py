@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model, login, logout, authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from django.core.cache import cache
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from redis_manager.cache_manager import CacheManager
+
 from django.http import HttpResponse
 from rest_framework import permissions
 
@@ -47,6 +47,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
 
         # write user's data in cookie
         user_data = {
+        "id": user.id,
         "email": user.email,
         "username": user.username,
         "first_name": user.first_name,
@@ -82,15 +83,11 @@ class AuthAPIView(generics.CreateAPIView):
         user = authenticate(request, email=email, password=password)
         if user is not None:
 
-            user_perms = PermissionRow.objects.filter(user=user)
-            if user_perms.count() > 1:
-                # cache permissions
-                permission_dict = {perm.related_desk_id: perm.permission for perm in user_perms}
-
-                cache.set(user.id, permission_dict, DEFAULT_TIMEOUT)
-
+            CacheManager.set_user_perms_in_cache(user.id)
+                
             login(request, user)
             user_data = {
+                "id": user.id,
                 "email": user.email,
                 "username": user.username,
                 "first_name": user.first_name,
@@ -109,6 +106,7 @@ class AuthAPIView(generics.CreateAPIView):
 
 def set_users_cookie(user_data, response):
     response.set_cookie("email", user_data["email"])
+    response.set_cookie("user_id", user_data["id"])
     response.set_cookie("username", user_data["username"])
     response.set_cookie("first_name", user_data["first_name"])
     response.set_cookie("last_name", user_data["last_name"])
