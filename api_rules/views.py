@@ -9,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user_auth.models import UsersDesks
-from django.core.cache import cache
+from redis_manager.cache_manager import CacheManager
 
 User = get_user_model()
 
@@ -21,7 +21,7 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     serializer_class = PermissionSerializer
-    queryset = PermissionRow.objects.prefetch_related("related_desk").select_related("user").all()
+    queryset = PermissionRow.objects.select_related("related_desk").select_related("user").all()
 
     def get_queryset(self):
         qs = self.queryset.filter(related_desk_id=self.kwargs["desk_id"])
@@ -35,7 +35,6 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
         return qs
 
     def get(self, request, *args, **kwargs):
-        print(request.path)
         queryset = self.get_queryset()
 
         page = self.paginate_queryset(queryset)
@@ -71,15 +70,18 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
             obj = self.perform_create(serializer)
 
         except IntegrityError:
-            return Response({"error": "This user already has a "
+            return Response({"detail": "This user already has a "
                                       "permission in selected group. use PATCH"
                                       "method to change his permission"}, status=403)
 
         headers = self.get_success_headers(serializer.data)
 
-        rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=desk.id)
+        rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=self.kwargs['desk_id'])
         rel.save()
 
+        # update cache
+        CacheManager.update_cache_of_user(user_id=obj.user_id, permission=obj.permission, desk_id=self.kwargs['desk_id'])
+        
         return Response(serializer.data, status=201, headers=headers)
 
 
@@ -124,13 +126,8 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         # update permission in cache if user's data is in memory
         post_data = request.data
         user_id = post_data['user']
-        data = cache.get(user_id)
         
-        if data is not None: 
-            desk_id = self.kwargs['desk_id']
-            new_perm = post_data['permission']
-            data.update({desk_id: new_perm})
-            cache.set(user_id, data)
+        CacheManager.update_cache_of_user(user_id=user_id, permission=post_data['permission'], desk_id=self.kwargs['desk_id'])
             
         if getattr(obj, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
@@ -143,8 +140,6 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         """
         Just provide user_id in json format in order to delete him from Desk
         """
-
-        # TODO: Add functionality to remove user's permissions from cache
 
         # Get PermissionRow instance
         obj = self.get_object()
@@ -160,9 +155,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete() 
 
         # update cache
-        user_info = cache.get(user_id)
-        del user_info[obj.related_desk_id]
-        cache.set(user_id, user_info)
+        CacheManager.delete_user_cache_row(user_id=user_id, desk_id=obj.related_desk_id)
 
         # Delete permission and user from desk
         obj.delete()

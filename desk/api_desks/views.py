@@ -8,7 +8,7 @@ from user_auth.models import UsersDesks
 from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
-from django.core.cache import cache
+from redis_manager.cache_manager import CacheManager
 
 
 class DeskAPIView(generics.ListAPIView,
@@ -20,7 +20,6 @@ class DeskAPIView(generics.ListAPIView,
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
     queryset = Desk.objects.prefetch_related('columns__tasks').all()
-            #.all()
 
     # disable pagination
     paginator = None
@@ -154,7 +153,7 @@ def get_user_perm_for_desk(user, serializer_data, qs):
         }
     }
 
-    users_dict = cache.get(user.id)
+    users_dict = CacheManager.get_user_perms(user.id)
     for row in range(len(qs)):
         perm = users_dict[serializer_data[row]['id']]
         serializer_data[row]['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]

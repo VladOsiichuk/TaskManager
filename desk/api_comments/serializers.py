@@ -32,6 +32,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'related_task',
             'author',
         ]
+        ordering = ['-id']
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):

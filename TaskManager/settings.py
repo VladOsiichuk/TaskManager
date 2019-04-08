@@ -192,7 +192,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = "/media/"
 
-CACHE_TTL = 15
+CACHE_TTL = 3
 
 CACHES = {
     "default": {

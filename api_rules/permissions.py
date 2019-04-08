@@ -3,6 +3,7 @@ from api_rules.models import PermissionRow
 from django.core.cache import cache
 from desk.model import Desk, Column, Comment, Task
 from debug.db_queries import DbQueries
+from redis_manager.cache_manager import CacheManager
 LOCAL_DEBUG_SQL = False
 
 permission_dict = {
@@ -20,23 +21,21 @@ def check_base_permission(request, view, permission, weight):
     @weight: weight of the role(1, 2, 3)
     This one checks if user has permission to create column/task/comment for desk with id='kwargs['desk_id']'
     """
-    print("Works......")
+
     dict = request.parser_context.get('kwargs')
-    print(cache.get(request.user.id))
+
+    user_perms = CacheManager.get_user_perms(user_id=request.user.id)
+
     # If DESK object is requested else return True
     if 'desk_id' in dict.keys():
-
-        # Check if user's data is in cache.         
-        if cache.get(request.user.id) is None:
-            return False
         
         # If user's permission is in cache 
-        # TODO: Think about this one validation
-        if dict['desk_id'] in cache.get(request.user.id).keys():
-            desk_role = cache.get(request.user.id)[dict['desk_id']]
+        if dict['desk_id'] in user_perms.keys():
+            desk_role = user_perms[dict['desk_id']]
             return permission_dict[desk_role] > weight
         else: 
             return False
+    
     else:
         return True
 
