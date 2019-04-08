@@ -37,8 +37,9 @@ class UserRegisterAPIView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
-        email = request.POST["email"]
-        password = request.POST["password"]
+        data = request.data
+        email = data.get('email')
+        password = data.get('password')
         cache.set("username", email, DEFAULT_TIMEOUT)
         # login user
         user = authenticate(request, email=email, password=password)
