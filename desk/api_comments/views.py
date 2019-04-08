@@ -52,11 +52,11 @@ class CreateCommentAPIView(generics.CreateAPIView):
         # check if user has access to create a new comment
         task = Task.objects.prefetch_related("related_column__related_desk__permissionrow_set").get(id=self.kwargs["task_id"])
 
-        # if provided task id is incorrect
-        if not task:
-            return Response({"error": "provided task id is incorrect"}, status=400)
+        # # if provided task id is incorrect
+        # if not task:
+        #     return Response({"error": "provided task id is incorrect"}, status=400)
 
-        self.check_object_permissions(request, task)
+        # self.check_object_permissions(request, task)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

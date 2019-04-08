@@ -8,6 +8,7 @@ from user_auth.models import UsersDesks
 from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
+from django.core.cache import cache
 
 
 class DeskAPIView(generics.ListAPIView,
@@ -40,7 +41,6 @@ class DeskAPIView(generics.ListAPIView,
     #     return users_qs
 
     def list(self, request, *args, **kwargs):
-        print("GGGGGGG")
         current_user = request.user
 
         # Show only Desks in which user is participant
@@ -113,9 +113,12 @@ def get_user_perm_for_desk(user, serializer_data, qs):
 
     permissions_dict = {
         "ADMIN": {
+            "ROLE": "ADMIN",
             "DO_ALL": True,
+            "DELETE_COMMENTS": False
         },
         "EDITOR": {
+            "ROLE": "EDITOR",
             "DO_ALL": False,
             "UPDATE_DESK": True,
             "DELETE_DESK": False,
@@ -129,9 +132,11 @@ def get_user_perm_for_desk(user, serializer_data, qs):
             "ADD_USER": True,
             "DELETE_USER": True,
             "UPDATE_PERMISSION": True,
+            "DELETE_COMMENTS": False
 
         },
         "STAFF": {
+            "ROLE": "STAFF",
             "DO_ALL": False,
             "UPDATE_DESK": True,
             "DELETE_DESK": False,
@@ -145,11 +150,12 @@ def get_user_perm_for_desk(user, serializer_data, qs):
             "ADD_USER": False,
             "DELETE_USER": False,
             "UPDATE_PERMISSION": False,
+            "DELETE_COMMENTS": False
         }
     }
 
+    users_dict = cache.get(user.id)
     for row in range(len(qs)):
-        perm = qs[row].permissionrow_set.filter(user=user).first().permission
+        perm = users_dict[serializer_data[row]['id']]
         serializer_data[row]['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]
-
     return serializer_data
