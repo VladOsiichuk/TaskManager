@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from django.core.cache import cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-
+from django.http import HttpResponse
 from rest_framework import permissions
 
 User = get_user_model()
@@ -43,10 +43,20 @@ class UserRegisterAPIView(generics.CreateAPIView):
         # login user
         user = authenticate(request, email=email, password=password)
 
-        if user is not None:
-            login(request, user)
+        login(request, user)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # write user's data in cookie
+        user_data = {
+        "email": user.email,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name
+        }
+
+        response = Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        response = set_users_cookie(user_data, response)
+
+        return response
 
 
 class AuthAPIView(generics.CreateAPIView):
@@ -86,9 +96,21 @@ class AuthAPIView(generics.CreateAPIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name
             }
-            return Response({
+            response = Response({
                 "detail": "Successfully authenticated. See cookie",
                 "user_data": user_data
             }, status=200)
+            
+
+            response = set_users_cookie(user_data, response)
+            return response
 
         return Response({"error": "invalid credentials"}, status=401)
+
+def set_users_cookie(user_data, response):
+    response.set_cookie("email", user_data["email"])
+    response.set_cookie("username", user_data["username"])
+    response.set_cookie("first_name", user_data["first_name"])
+    response.set_cookie("last_name", user_data["last_name"])
+
+    return response
