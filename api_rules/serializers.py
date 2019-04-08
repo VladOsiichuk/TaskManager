@@ -11,7 +11,6 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermissionRow
         fields = [
-            'id',
             'email',
             'user',
             'permission',
