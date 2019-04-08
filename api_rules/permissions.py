@@ -62,6 +62,12 @@ class IsEditorOfDeskOrHigher(permissions.BasePermission):
         return check_base_permission(request, view, "EDITOR", 1)
 
     def has_object_permission(self, request, view, obj):
+        
+        # asignee can always change tasks
+        if isinstance(obj, Task):
+            if obj.current_executor == request.user:
+                return True
+        
         return check_base_permission(request, view, "EDITOR", 1)
 
 

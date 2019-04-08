@@ -159,6 +159,11 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         user_id = request.data.get('user')
         rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete() 
 
+        # update cache
+        user_info = cache.get(user_id)
+        del user_info[obj.related_desk_id]
+        cache.set(user_id, user_info)
+
         # Delete permission and user from desk
         obj.delete()
 

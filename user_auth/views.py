@@ -40,7 +40,6 @@ class UserRegisterAPIView(generics.CreateAPIView):
         data = request.data
         email = data.get('email')
         password = data.get('password')
-        cache.set("username", email, DEFAULT_TIMEOUT)
         # login user
         user = authenticate(request, email=email, password=password)
 
@@ -71,7 +70,6 @@ class AuthAPIView(generics.CreateAPIView):
         password = data.get('password')
 
         user = authenticate(request, email=email, password=password)
-
         if user is not None:
 
             user_perms = PermissionRow.objects.filter(user=user)
@@ -82,6 +80,15 @@ class AuthAPIView(generics.CreateAPIView):
                 cache.set(user.id, permission_dict, DEFAULT_TIMEOUT)
 
             login(request, user)
-            return Response({"detail": "Successfully authenticated. See cookie"}, status=200)
+            user_data = {
+                "email": user.email,
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name
+            }
+            return Response({
+                "detail": "Successfully authenticated. See cookie",
+                "user_data": user_data
+            }, status=200)
 
         return Response({"error": "invalid credentials"}, status=401)
