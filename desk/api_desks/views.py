@@ -20,7 +20,6 @@ class DeskAPIView(generics.ListAPIView,
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
     queryset = Desk.objects.prefetch_related('columns__tasks').all()
-            #.all()
 
     # disable pagination
     paginator = None

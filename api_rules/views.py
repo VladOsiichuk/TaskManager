@@ -21,7 +21,7 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     serializer_class = PermissionSerializer
-    queryset = PermissionRow.objects.prefetch_related("related_desk").select_related("user").all()
+    queryset = PermissionRow.objects.select_related("related_desk").select_related("user").all()
 
     def get_queryset(self):
         qs = self.queryset.filter(related_desk_id=self.kwargs["desk_id"])
@@ -35,7 +35,6 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
         return qs
 
     def get(self, request, *args, **kwargs):
-        print(request.path)
         queryset = self.get_queryset()
 
         page = self.paginate_queryset(queryset)
@@ -71,15 +70,18 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
             obj = self.perform_create(serializer)
 
         except IntegrityError:
-            return Response({"error": "This user already has a "
+            return Response({"detail": "This user already has a "
                                       "permission in selected group. use PATCH"
                                       "method to change his permission"}, status=403)
 
         headers = self.get_success_headers(serializer.data)
 
-        rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=desk.id)
+        rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=self.kwargs['desk_id'])
         rel.save()
 
+        # update cache
+        CacheManager.update_cache_of_user(user_id=obj.user_id, permission=obj.permission, desk_id=self.kwargs['desk_id'])
+        
         return Response(serializer.data, status=201, headers=headers)
 
 

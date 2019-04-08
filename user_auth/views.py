@@ -46,16 +46,8 @@ class UserRegisterAPIView(generics.CreateAPIView):
         login(request, user)
 
         # write user's data in cookie
-        user_data = {
-        "id": user.id,
-        "email": user.email,
-        "username": user.username,
-        "first_name": user.first_name,
-        "last_name": user.last_name
-        }
-
         response = Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        response = set_users_cookie(user_data, response)
+        response = set_users_cookie(user, response)
 
         return response
 
@@ -86,25 +78,24 @@ class AuthAPIView(generics.CreateAPIView):
             CacheManager.set_user_perms_in_cache(user.id)
                 
             login(request, user)
-            user_data = {
+            
+            response = Response({"detail": "Successfully authenticated. See cookie"}, status=200)
+            
+            response = set_users_cookie(user, response)
+            return response
+
+        return Response({"error": "invalid credentials"}, status=401)
+
+def set_users_cookie(user, response):
+
+    user_data = {
                 "id": user.id,
                 "email": user.email,
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name
             }
-            response = Response({
-                "detail": "Successfully authenticated. See cookie",
-                "user_data": user_data
-            }, status=200)
-            
 
-            response = set_users_cookie(user_data, response)
-            return response
-
-        return Response({"error": "invalid credentials"}, status=401)
-
-def set_users_cookie(user_data, response):
     response.set_cookie("email", user_data["email"])
     response.set_cookie("user_id", user_data["id"])
     response.set_cookie("username", user_data["username"])

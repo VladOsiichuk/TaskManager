@@ -70,3 +70,12 @@ class CacheManager:
         user_info = cache.get(user_id)
         del user_info[desk_id]
         cache.set(user_id, user_info)
+
+    # @classmethod
+    # def add_users_permission(self, user_id, desk_id, permission):
+    #     """Use this method when you add a new user to Desk"""
+    #     data = cache.get(user_id)
+        
+    #     if data is not None:
+    #         data.update({desk_id: permission})
+    #         cache.set(user_id, data)
