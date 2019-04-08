@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
-from mptt.models import MPTTModel, TreeForeignKey
+
 
 
 class Desk(models.Model):

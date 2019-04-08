@@ -27,16 +27,42 @@ DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 
-ALLOWED_HOSTS = [
-  os.environ.get('PROD_HOST', 'localhost'),
-  '127.0.0.1',
+ALLOWED_HOSTS = []
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+  'localhost:63342',
   '*',
-]
+)
+
+CORS_ALLOW_HEADERS = (
+  'accept',
+  'cors',
+  'accept-encoding',
+  'authorization',
+  'content-type',
+  'dnt',
+  'origin',
+  'user-agent',
+  'x-csrftoken',
+  'x-requested-with',
+)
+
+CORS_ALLOW_METHODS = (
+  'DELETE',
+  'GET',
+  'OPTIONS',
+  'PATCH',
+  'POST',
+  'PUT',
+)
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,8 +76,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
