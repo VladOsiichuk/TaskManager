@@ -25,7 +25,13 @@ SECRET_KEY = 'p%z_0!2_zk$hrx@+!m+&zyb@sz*^uo@xb=gb)kl%vf7!qr403g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CORS_ORIGIN_ALLOW_ALL = DEBUG
+
+ALLOWED_HOSTS = [
+  os.environ.get('PROD_HOST', 'localhost'),
+  '127.0.0.1',
+  '*',
+]
 
 
 # Application definition
@@ -52,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
+    'middleware.PermissionCache.PermissionCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'TaskManager.urls'
@@ -157,11 +164,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = "/media/"
 
+CACHE_TTL = 15
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
-        "TIMEOUT": 60 * 60,
+        "TIMEOUT": CACHE_TTL * 60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_TIMEOUT": 5,

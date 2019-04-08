@@ -13,8 +13,10 @@ class PermissionSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'email',
+            'user',
             'permission',
         ]
+        read_only_fields = ['user']
 
     @staticmethod
     def validate_email(value):

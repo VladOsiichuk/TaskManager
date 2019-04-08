@@ -55,13 +55,13 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
         Use this method in order to add a new user with some permission to Desk
         """
 
-        desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
+        # desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
 
-        if desk is None:
-            return Response({"error": f"desk with selected id does not exists"}, status=400)
+        # if desk is None:
+        #     return Response({"error": f"desk with selected id does not exists"}, status=400)
 
-        # check if user has access to add new users to this desk
-        self.check_object_permissions(request, desk)
+        # # check if user has access to add new users to this desk
+        # self.check_object_permissions(request, desk)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -96,7 +96,6 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         #obj = #PermissionRow.objects.prefetch_related("user").select_related("related_desk") \
         print(self.request.data)
         obj = self.queryset.filter(related_desk_id=self.kwargs['desk_id'], user_id=self.request.data['user']).first()
-        self.check_object_permissions(self.request, obj)
 
         return obj
 
@@ -109,6 +108,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         Changes permissions of user in selected group
         """
 
+        # Get PermissionRow instance
         obj = self.get_object()
 
         if obj is None:
@@ -146,6 +146,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
 
         # TODO: Add functionality to remove user's permissions from cache
 
+        # Get PermissionRow instance
         obj = self.get_object()
 
         if obj is None:
