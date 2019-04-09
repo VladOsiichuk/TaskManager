@@ -154,6 +154,7 @@ def get_user_perm_for_desk(user, serializer_data, qs):
     }
 
     users_dict = CacheManager.get_user_perms(user.id)
+    print(users_dict)
     for row in range(len(qs)):
         perm = users_dict[serializer_data[row]['id']]
         serializer_data[row]['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]

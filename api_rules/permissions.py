@@ -37,6 +37,7 @@ def check_base_permission(request, view, permission, weight):
             return False
     
     else:
+        print("IS NOT DENIED")
         return True
 
 
