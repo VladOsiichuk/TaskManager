@@ -4,8 +4,7 @@ from django.contrib.auth import get_user_model, login, logout, authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
-from redis_manager.cache_manager import CacheManager
-
+from redis_manager.permission_cache_manager import PermissionCacheManager
 from django.http import HttpResponse
 from rest_framework import permissions
 
@@ -75,7 +74,7 @@ class AuthAPIView(generics.CreateAPIView):
         user = authenticate(request, email=email, password=password)
         if user is not None:
 
-            CacheManager.set_user_perms_in_cache(user.id)
+            PermissionCacheManager.set_user_perms_in_cache(user.id)
                 
             login(request, user)
             

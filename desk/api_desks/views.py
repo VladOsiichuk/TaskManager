@@ -8,8 +8,9 @@ from user_auth.models import UsersDesks
 from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
-from redis_manager.cache_manager import CacheManager
-
+from redis_manager.permission_cache_manager import PermissionCacheManager
+LOCAL_DEBUG_SQL = True
+from debug.db_queries import DbQueries
 
 class DeskAPIView(generics.ListAPIView,
                   mixins.CreateModelMixin,
@@ -44,9 +45,8 @@ class DeskAPIView(generics.ListAPIView,
 
         # Show only Desks in which user is participant
         queryset = self.queryset.filter(permissionrow__user=current_user)
-
         serializer = self.get_serializer(queryset, many=True)
-
+        DbQueries.show(l_dbg_sql=LOCAL_DEBUG_SQL)
         # Add permissions of user for requested desks
         new_data = get_user_perm_for_desk(current_user, serializer.data, queryset)
 
@@ -71,6 +71,9 @@ class DeskAPIView(generics.ListAPIView,
 
         p = PermissionRow.objects.create(related_desk=desk_object, user=request.user, permission="ADMIN")
         p.save()
+
+        # UPDATE CACHE
+        PermissionCacheManager.update_cache_of_user(user_id=request.user.id, permission="ADMIN", desk_id=desk_object.id)
 
         # return success response
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -153,8 +156,7 @@ def get_user_perm_for_desk(user, serializer_data, qs):
         }
     }
 
-    users_dict = CacheManager.get_user_perms(user.id)
-    print(users_dict)
+    users_dict = PermissionCacheManager.get_user_perms(user.id)
     for row in range(len(qs)):
         perm = users_dict[serializer_data[row]['id']]
         serializer_data[row]['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]
