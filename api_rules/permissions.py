@@ -3,8 +3,9 @@ from api_rules.models import PermissionRow
 from django.core.cache import cache
 from desk.model import Desk, Column, Comment, Task
 from debug.db_queries import DbQueries
-from redis_manager.cache_manager import CacheManager
-LOCAL_DEBUG_SQL = False
+from redis_manager.permission_cache_manager import PermissionCacheManager
+from debug.db_queries import DbQueries
+LOCAL_DEBUG_SQL = True
 
 permission_dict = {
     "STAFF": 1,
@@ -24,7 +25,7 @@ def check_base_permission(request, view, permission, weight):
 
     dict = request.parser_context.get('kwargs')
 
-    user_perms = CacheManager.get_user_perms(user_id=request.user.id)
+    user_perms = PermissionCacheManager.get_user_perms(user_id=request.user.id)
 
     # If DESK object is requested else return True
     if 'desk_id' in dict.keys():
