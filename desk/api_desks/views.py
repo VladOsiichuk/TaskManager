@@ -1,3 +1,5 @@
+from rest_framework.generics import get_object_or_404
+
 from desk.model import Desk
 from .serializers import DeskSerializer
 from rest_framework import generics
@@ -46,11 +48,9 @@ class DeskAPIView(generics.ListAPIView,
         # Show only Desks in which user is participant
         queryset = self.queryset.filter(permissionrow__user=current_user)
         serializer = self.get_serializer(queryset, many=True)
-        DbQueries.show(l_dbg_sql=LOCAL_DEBUG_SQL)
-        # Add permissions of user for requested desks
-        new_data = get_user_perm_for_desk(current_user, serializer.data, queryset)
 
-        return Response(new_data)
+        # Add permissions of user for requested desks
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         """
@@ -86,10 +86,19 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
 
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
-    queryset = Desk.objects.prefetch_related("columns__tasks").all()
+    queryset = Desk.objects.all().prefetch_related("columns__tasks", "columns",
+                                                                      "usersdesks_set__user"
+                                             )
     serializer_class = DeskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        new_data = get_user_perm_for_desk(request.user, serializer.data)
+        new_data = get_all_users(new_data, instance)
+        return Response(new_data)
 
     def put(self, request, *args, **kwargs):
         """Update the Desk(Only Desk, not Comments or Columns or Tasks)"""
@@ -105,11 +114,11 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
         return self.destroy(request, *args, **kwargs)
 
 
-def get_user_perm_for_desk(user, serializer_data, qs):
+def get_user_perm_for_desk(user, serializer_data):
     """
     :param user: Who requests information about desks
     :param serializer_data: serialized data about desks
-    :param qs: queryset of desks
+    :param obj: Desk instance
     :return: updated serialized data which contains permissions of user to each desk
     """
 
@@ -157,7 +166,24 @@ def get_user_perm_for_desk(user, serializer_data, qs):
     }
 
     users_dict = PermissionCacheManager.get_user_perms(user.id)
-    for row in range(len(qs)):
-        perm = users_dict[serializer_data[row]['id']]
-        serializer_data[row]['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]
+    perm = users_dict[serializer_data['id']]
+    serializer_data['permissions_of_current_user_for_this_desk'] = permissions_dict[perm]
     return serializer_data
+
+
+def get_all_users(serialized_data, obj):
+    """
+    :param serialized_data: serialized_data
+    :param obj:
+    :return:
+    """
+
+    users = obj.usersdesks_set.all()
+    data = []
+    for row in users:
+        data.append({"user_id": row.user.id,
+                     "username": row.user.username,
+                     "email": row.user.email})
+
+    serialized_data['users'] = data
+    return serialized_data

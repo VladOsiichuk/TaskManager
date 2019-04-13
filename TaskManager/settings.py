@@ -73,10 +73,11 @@ INSTALLED_APPS = [
     'user_auth.apps.UserConfig',
     'desk.apps.DeskConfig',
     'api_rules.apps.RulesConfig',
+    'debug_toolbar'
 ]
 
 MIDDLEWARE = [
-
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -86,7 +87,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
-    'middleware.PermissionCache.PermissionCacheMiddleware',
+    'middleware.PermissionCache.PermissionCacheMiddleware'
 ]
 
 ROOT_URLCONF = 'TaskManager.urls'
@@ -175,6 +176,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = ()
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -210,3 +213,16 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+
+DEBUG_TOOLBAR_PANELS = [
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+    ]
+SHOW_TOOLBAR_CALLBACK = True
+
+INTERNAL_IPS = ('127.0.0.1',)

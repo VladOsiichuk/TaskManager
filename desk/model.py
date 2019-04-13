@@ -83,9 +83,9 @@ class Task(models.Model):
 
     image = models.ImageField(upload_to=upload_task_image, blank=True, null=True)
     priority_choices = [
-        ("Високий", "HIGH"),
-        ("Середній", "MEDIUM"),
-        ("Низький", "LOW"),
+        ("High", "HIGH"),
+        ("Medium", "MEDIUM"),
+        ("Low", "LOW"),
     ]
     priority = models.CharField(max_length=8, choices=priority_choices, default="Середній")
 
