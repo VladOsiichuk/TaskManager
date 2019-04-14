@@ -86,15 +86,13 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
 
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
-    queryset = Desk.objects.all().prefetch_related("columns__tasks", "columns",
-                                                                      "usersdesks_set__user"
-                                             )
+    queryset = Desk.objects.prefetch_related("columns__tasks", "usersdesks_set__user").all()
     serializer_class = DeskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+        instance = self.queryset.filter(id=self.kwargs[self.lookup_url_kwarg]).first()
         serializer = self.get_serializer(instance)
         new_data = get_user_perm_for_desk(request.user, serializer.data)
         new_data = get_all_users(new_data, instance)

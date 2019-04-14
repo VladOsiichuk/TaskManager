@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils.timezone import now
 
 
-
 class Desk(models.Model):
     """
     class describing the desk
@@ -87,7 +86,7 @@ class Task(models.Model):
         ("Medium", "MEDIUM"),
         ("Low", "LOW"),
     ]
-    priority = models.CharField(max_length=8, choices=priority_choices, default="Середній")
+    priority = models.CharField(max_length=8, choices=priority_choices, default="Medium")
 
     def __str__(self):
         return f"{self.name} - " + self.description[:25] + "..."
@@ -124,4 +123,3 @@ class Comment(models.Model):
     @property
     def desk_author(self):
         return self.related_task.related_column.related_desk.author
-

@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.conf import settings
 
+
 class PermissionCacheMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
