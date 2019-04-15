@@ -80,10 +80,10 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def patch(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return Response({"message": "please use PATCH method instead"}, status=400)
 
-    def put(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         """
         Updates the Task. Allowed only to EDITOR, ADMIN and person for who task is assigned
         """
