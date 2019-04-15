@@ -59,18 +59,13 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
     serializer_class = UpdateTaskSerializer
     # prefetch_related("comments")
 
-    def get_queryset(self):
-        #desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
-        #self.check_object_permissions(self.request, desk)
-        return Task.objects.filter(id=self.kwargs['task_id']) #select_related("related_column__related_desk").
-
-    def get(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         """
         Get information about task with ID=task_id. If Task is not related to the
         Column with ID=column_id then 404 error
         """
-
-        instance = Task.objects.filter(id=self.kwargs["task_id"]).first()
+        instance = Task.objects.select_related("current_executor").\
+            prefetch_related("related_column").filter(id=self.kwargs["task_id"]).first()
 
         # self.check_object_permissions(self.request, instance)
 
@@ -78,12 +73,14 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
             return Response({"detail": "not found"}, status=404)
 
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    def patch(self, request, *args, **kwargs):
-        return Response({"message": "please use PATCH method instead"}, status=400)
+        new_data = get_columns(self.kwargs['desk_id'], serializer.data)
+        new_data['current_executor'] = {"id": instance.current_executor.id, "username": instance.current_executor.username}
+        return Response(new_data)
 
     def put(self, request, *args, **kwargs):
+        return Response({"message": "please use PATCH method instead"}, status=400)
+
+    def patch(self, request, *args, **kwargs):
         """
         Updates the Task. Allowed only to EDITOR, ADMIN and person for who task is assigned
         """
@@ -121,3 +118,11 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Delete task which has task_id
         """
         return self.destroy(request, *args, **kwargs)
+
+
+def get_columns(desk_id, data):
+
+    desk = Desk.objects.get(id=desk_id)
+    column_data = [{"id": row.id, "name": row.name} for row in desk.columns.all()]
+    data['columns'] = column_data
+    return data
