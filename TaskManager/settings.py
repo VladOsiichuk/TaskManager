@@ -25,27 +25,32 @@ SECRET_KEY = 'p%z_0!2_zk$hrx@+!m+&zyb@sz*^uo@xb=gb)kl%vf7!qr403g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CORS_ORIGIN_ALLOW_ALL = DEBUG
+CORS_ORIGIN_ALLOW_ALL = True
 
 ALLOWED_HOSTS = []
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
+  'http://127.0.0.1:8080',
   'localhost:63342',
   '*',
 )
 
 CORS_ALLOW_HEADERS = (
+  'Access-Control-Allow-Origin',
+  'Access-Control-Allow-Credentials',
   'accept',
   'cors',
   'accept-encoding',
   'authorization',
   'content-type',
   'dnt',
+  'cookie',
   'origin',
   'user-agent',
   'x-csrftoken',
+  'x-csrf-token',
   'x-requested-with',
 )
 
