@@ -184,4 +184,7 @@ def get_all_users(serialized_data, obj):
                      "email": row.user.email})
 
     serialized_data['users'] = data
+    for row in range(len(serialized_data['columns'])):
+        for task in range(len(serialized_data['columns'][row]['tasks'])):
+            serialized_data['columns'][row]['tasks'][task]['users'] = data
     return serialized_data
