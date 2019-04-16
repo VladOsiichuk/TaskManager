@@ -7,6 +7,8 @@ from api_rules.permissions import IsEditorOfDeskOrHigher
 from rest_framework import status
 from rest_framework.response import Response
 from desk.api_comments.serializers import CommentSerializer
+from desk.actions.actions_data import get_columns_and_users, get_comments
+
 
 class TaskAPIView(generics.CreateAPIView,
                   generics.ListAPIView
@@ -110,30 +112,3 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Delete task which has task_id
         """
         return self.destroy(request, *args, **kwargs)
-
-
-def get_columns_and_users(desk_id, data):
-
-    desk = Desk.objects.prefetch_related("columns",
-                                         "usersdesks_set__user").get(id=desk_id)
-    user_data = []
-    users = desk.usersdesks_set.all()
-    for row in users:
-        user_data.append({"user_id": row.user.id,
-                     "username": row.user.username,
-                     "email": row.user.email})
-
-    column_data = [{"id": row.id, "name": row.name} for row in desk.columns.all()]
-    data['columns'] = column_data
-    data['users'] = user_data
-    return data
-
-
-def get_comments(data, task_id):
-    comments = Comment.objects.select_related("parent__parent__parent", "author").\
-        prefetch_related("related_comment__related_comment__related_comment").filter(related_task_id=task_id,
-                                                                                     is_child=False)
-    data_ser = CommentSerializer(data=comments, many=True)
-    data_ser.is_valid()
-    data['comments'] = data_ser.data
-    return data

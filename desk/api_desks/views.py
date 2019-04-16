@@ -11,8 +11,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
 from redis_manager.permission_cache_manager import PermissionCacheManager
-LOCAL_DEBUG_SQL = True
-from debug.db_queries import DbQueries
+from desk.actions.actions_data import get_columns_and_users, get_comments
+
 
 class DeskAPIView(generics.ListAPIView,
                   mixins.CreateModelMixin,
@@ -95,7 +95,7 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
         instance = self.queryset.filter(id=self.kwargs[self.lookup_url_kwarg]).first()
         serializer = self.get_serializer(instance)
         new_data = get_user_perm_for_desk(request.user, serializer.data)
-        new_data = get_all_users(new_data, instance)
+        new_data = get_additional_data(new_data, instance)
         return Response(new_data)
 
     def put(self, request, *args, **kwargs):
@@ -169,14 +169,16 @@ def get_user_perm_for_desk(user, serializer_data):
     return serializer_data
 
 
-def get_all_users(serialized_data, obj):
+def get_additional_data(serialized_data, obj):
     """
     :param serialized_data: serialized_data
-    :param obj:
-    :return:
+    :param obj: desk obj
+    :return: attach additional data to tasks.
     """
 
     users = obj.usersdesks_set.all()
+    columns = obj.columns.all()
+    columns_data = [{"id": row.id, "name": row.name} for row in columns]
     data = []
     for row in users:
         data.append({"user_id": row.user.id,
@@ -186,5 +188,9 @@ def get_all_users(serialized_data, obj):
     serialized_data['users'] = data
     for row in range(len(serialized_data['columns'])):
         for task in range(len(serialized_data['columns'][row]['tasks'])):
+            # add users to tasks
             serialized_data['columns'][row]['tasks'][task]['users'] = data
+            # add columns to tasks
+            serialized_data['columns'][row]['tasks'][task]['columns'] = columns_data
+
     return serialized_data
