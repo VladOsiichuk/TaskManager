@@ -19,12 +19,11 @@ class CommentAPIView(generics.ListAPIView):
     paginator = None
 
     def get_queryset(self, *args, **kwargs):
-        return Comment.objects.select_related("parent__parent__parent").prefetch_related("related_comment__related_comment__related_comment").all()
+        return Comment.objects.select_related("parent__parent__parent").\
+            prefetch_related("related_comment__related_comment__related_comment").all()
 
     def get(self, request, *args, **kwargs):
 
-        # desk = Desk.objects.prefetch_related("permissionrow_set").filter(id=self.kwargs['desk_id']).first()
-        # self.check_object_permissions(self.request, desk)
         #data = CommentCacheManager.get_comments_from_cache(related_task_id=self.kwargs["task_id"])
         #return Response(data)
         queryset = self.filter_queryset(self.get_queryset()).filter(is_child=False, related_task_id=self.kwargs['task_id'])
@@ -55,6 +54,7 @@ class CreateCommentAPIView(generics.CreateAPIView):
 
         self.perform_create(serializer)
         comment = serializer.data
+        comment['author'] = request.user.username
         #CommentCacheManager.update_comments_in_cache(related_task_id=self.kwargs["task_id"], new_data=comment)
         
         # return success response
