@@ -1,4 +1,4 @@
-from desk.model import Column, Desk, Task
+from desk.model import Column, Desk, Task, Comment
 from .serializers import CreateTaskSerializer, UpdateTaskSerializer
 from rest_framework import generics
 from rest_framework import mixins, permissions
@@ -6,7 +6,7 @@ from rest_framework.authentication import SessionAuthentication
 from api_rules.permissions import IsEditorOfDeskOrHigher
 from rest_framework import status
 from rest_framework.response import Response
-
+from desk.api_comments.serializers import CommentSerializer
 
 class TaskAPIView(generics.CreateAPIView,
                   generics.ListAPIView
@@ -40,8 +40,11 @@ class TaskAPIView(generics.CreateAPIView,
 
         self.perform_create(serializer)
 
+        # add users and columns for task
+        data = get_columns_and_users(self.kwargs['desk_id'], serializer.data)
+
         # return success response
-        return Response(serializer.data, status=201)
+        return Response(data, status=201)
 
 
 class TaskDetailAPIView(mixins.UpdateModelMixin,
@@ -64,8 +67,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Get information about task with ID=task_id. If Task is not related to the
         Column with ID=column_id then 404 error
         """
-        instance = Task.objects.select_related("current_executor").\
-            prefetch_related("related_column").filter(id=self.kwargs["task_id"]).first()
+        instance = Task.objects.select_related("current_executor", "related_column").filter(id=self.kwargs["task_id"]).first()
 
         # self.check_object_permissions(self.request, instance)
 
@@ -73,8 +75,10 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
             return Response({"detail": "not found"}, status=404)
 
         serializer = self.get_serializer(instance)
-        new_data = get_columns(self.kwargs['desk_id'], serializer.data)
+        new_data = get_columns_and_users(self.kwargs['desk_id'], serializer.data)
         new_data['current_executor'] = {"id": instance.current_executor.id, "username": instance.current_executor.username}
+
+        new_data = get_comments(new_data, self.kwargs[self.lookup_url_kwarg])
         return Response(new_data)
 
     def put(self, request, *args, **kwargs):
@@ -85,18 +89,6 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         Updates the Task. Allowed only to EDITOR, ADMIN and person for who task is assigned
         """
         partial = kwargs.pop('partial', False)
-
-        # # Check if selected column is related to the Current Desk
-        # desk_id = self.kwargs["desk_id"]
-        # related_column_id = int(request.data['related_column'])
-
-        # #print(related_column_id, desk_id)
-        # col = Column.objects.select_related("related_desk").get(id=related_column_id)  #get(id=related_column_id)
-
-        # # if desk_id is not the same as related_desk_id then return Bad Response
-        # if col.related_desk_id != desk_id:
-        #     return Response({"Message": f"Selected column(ID={related_column_id})"
-        #                     f" is not related to the desk with ID={related_column_id}"}, status=400)
 
         instance = Task.objects.prefetch_related("comments").filter(id=self.kwargs["task_id"]).first()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -120,9 +112,28 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         return self.destroy(request, *args, **kwargs)
 
 
-def get_columns(desk_id, data):
+def get_columns_and_users(desk_id, data):
 
-    desk = Desk.objects.get(id=desk_id)
+    desk = Desk.objects.prefetch_related("columns",
+                                         "usersdesks_set__user").get(id=desk_id)
+    user_data = []
+    users = desk.usersdesks_set.all()
+    for row in users:
+        user_data.append({"user_id": row.user.id,
+                     "username": row.user.username,
+                     "email": row.user.email})
+
     column_data = [{"id": row.id, "name": row.name} for row in desk.columns.all()]
     data['columns'] = column_data
+    data['users'] = user_data
+    return data
+
+
+def get_comments(data, task_id):
+    comments = Comment.objects.select_related("parent__parent__parent", "author").\
+        prefetch_related("related_comment__related_comment__related_comment").filter(related_task_id=task_id,
+                                                                                     is_child=False)
+    data_ser = CommentSerializer(data=comments, many=True)
+    data_ser.is_valid()
+    data['comments'] = data_ser.data
     return data

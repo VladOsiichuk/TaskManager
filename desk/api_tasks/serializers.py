@@ -28,15 +28,22 @@ class CreateTaskSerializer(serializers.ModelSerializer):
 
     # Check if deadline is later or equal to today's date
     def validate_task_deadline(self, value):
+        print(value)
         today = datetime.date.today()
-        if today.year > value.year or today.month > value.month:
+        if today.year > value.year:
             raise serializers.ValidationError("Deadline should be later or equal to today's date")
+        elif today.year == value.year:
+            if today.month > value.month:
+                raise serializers.ValidationError("Deadline should be later or equal to today's date")
+            elif today.month == value.month:
+                if today.day > value.day:
+                    raise serializers.ValidationError("Deadline should be later or equal to today's date")
+
         return value
 
 
 # class to update tasks
 class UpdateTaskSerializer(serializers.ModelSerializer):
-    comments_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Task
@@ -49,7 +56,6 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
             'current_executor',
             'priority',
             'image',
-            'comments_url',
         ]
 
         read_only_fields = [

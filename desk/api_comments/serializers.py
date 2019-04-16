@@ -9,9 +9,11 @@ class RecursiveField(serializers.Serializer):
         serializer = self.parent.parent.__class__(value, context=self.context)
         return serializer.data
 
+
 # class to create New tasks
 class CommentSerializer(serializers.ModelSerializer):
     related_comment = RecursiveField(many=True)
+    author = serializers.CharField(source="author.username")
 
     class Meta:
         model = Comment

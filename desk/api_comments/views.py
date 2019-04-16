@@ -19,7 +19,7 @@ class CommentAPIView(generics.ListAPIView):
     paginator = None
 
     def get_queryset(self, *args, **kwargs):
-        return Comment.objects.prefetch_related("related_comment__related_comment__related_comment").all()
+        return Comment.objects.select_related("parent__parent__parent").prefetch_related("related_comment__related_comment__related_comment").all()
 
     def get(self, request, *args, **kwargs):
 
