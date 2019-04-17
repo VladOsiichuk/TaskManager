@@ -37,8 +37,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api-users/', include('user_auth.urls')),
     path('api-desks/', include('desk.api_desks.urls')),
-    #path('api_columns/', include('desk.api_columns.urls'))
-    #url('api_rules/', include('api_rules.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

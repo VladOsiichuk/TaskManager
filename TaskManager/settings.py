@@ -77,6 +77,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -87,7 +88,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
-    'middleware.PermissionCache.PermissionCacheMiddleware'
+    'middleware.PermissionCache.PermissionCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'TaskManager.urls'
@@ -211,7 +212,7 @@ CACHES = {
     }
 }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "redis_sessions.session"
 SESSION_CACHE_ALIAS = "default"
 
 
