@@ -57,7 +57,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
 
-    queryset = Task.objects.all().prefetch_related("comments__author")
+    queryset = Task.objects.prefetch_related("comments__author").all()
 
     lookup_field = 'id'
     lookup_url_kwarg = 'task_id'
