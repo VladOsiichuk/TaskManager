@@ -7,6 +7,7 @@ from rest_framework import generics
 from redis_manager.permission_cache_manager import PermissionCacheManager
 from django.http import HttpResponse
 from rest_framework import permissions
+from rest_framework.views import APIView
 
 User = get_user_model()
 
@@ -85,6 +86,7 @@ class AuthAPIView(generics.CreateAPIView):
 
         return Response({"error": "invalid credentials"}, status=401)
 
+
 def set_users_cookie(user, response):
 
     user_data = {
@@ -102,3 +104,21 @@ def set_users_cookie(user, response):
     response.set_cookie("last_name", user_data["last_name"])
 
     return response
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    authentication_classes = []
+
+    def post(self, request):
+
+        logout(request)
+        response = Response({"detail": "Successfully authenticated. See cookie"}, status=200)
+        response.delete_cookie("email")
+        response.delete_cookie("user_id")
+        response.delete_cookie("username")
+        response.delete_cookie("first_name")
+        response.delete_cookie("last_name")
+
+        return response

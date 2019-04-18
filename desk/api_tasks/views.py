@@ -90,7 +90,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
         """
         Updates the Task. Allowed only to EDITOR, ADMIN and person for who task is assigned
         """
-        partial = kwargs.pop('partial', False)
+        partial = True
 
         instance = Task.objects.prefetch_related("comments").filter(id=self.kwargs["task_id"]).first()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
