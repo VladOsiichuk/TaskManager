@@ -9,7 +9,7 @@ from api_rules.models import PermissionRow
 from user_auth.models import UsersDesks
 from rest_framework import status
 from rest_framework.response import Response
-from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher
+from api_rules.permissions import IsAdminOfDesk, IsEditorOfDeskOrHigher, IsStaffOfDeskOrHigher
 from redis_manager.permission_cache_manager import PermissionCacheManager
 from desk.actions.actions_data import get_columns_and_users, get_comments
 
@@ -84,12 +84,20 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
                         generics.RetrieveAPIView,
                         ):
 
-    permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
+    #permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     queryset = Desk.objects.prefetch_related("columns__tasks", "usersdesks_set__user").all()
     serializer_class = DeskSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'desk_id'
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated]
+        if self.request.method == "GET":
+            permission_classes.append(IsStaffOfDeskOrHigher)
+        else:
+            permission_classes.append(IsEditorOfDeskOrHigher)
+        return [permission() for permission in self.permission_classes]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.queryset.filter(id=self.kwargs[self.lookup_url_kwarg]).first()

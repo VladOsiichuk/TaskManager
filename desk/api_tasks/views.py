@@ -3,7 +3,7 @@ from .serializers import CreateTaskSerializer, UpdateTaskSerializer
 from rest_framework import generics
 from rest_framework import mixins, permissions
 from rest_framework.authentication import SessionAuthentication
-from api_rules.permissions import IsEditorOfDeskOrHigher
+from api_rules.permissions import IsEditorOfDeskOrHigher, IsStaffOfDeskOrHigher
 from rest_framework import status
 from rest_framework.response import Response
 from desk.api_comments.serializers import CommentSerializer
@@ -54,7 +54,7 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
                         generics.RetrieveAPIView,
                         ):
 
-    permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
+    #permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
 
     queryset = Task.objects.prefetch_related("comments__author").all()
@@ -63,6 +63,14 @@ class TaskDetailAPIView(mixins.UpdateModelMixin,
     lookup_url_kwarg = 'task_id'
     serializer_class = UpdateTaskSerializer
     # prefetch_related("comments")
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated]
+        if self.request.method == "GET":
+            permission_classes.append(IsStaffOfDeskOrHigher)
+        else:
+            permission_classes.append(IsEditorOfDeskOrHigher)
+        return [permission() for permission in self.permission_classes]
 
     def retrieve(self, request, *args, **kwargs):
         """
