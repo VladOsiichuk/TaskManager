@@ -114,7 +114,7 @@ class LogoutAPIView(APIView):
     def post(self, request):
 
         logout(request)
-        response = Response({"detail": "Successfully authenticated. See cookie"}, status=200)
+        response = Response({"detail": "Successfully logged out. See cookie"}, status=200)
         response.delete_cookie("email")
         response.delete_cookie("user_id")
         response.delete_cookie("username")

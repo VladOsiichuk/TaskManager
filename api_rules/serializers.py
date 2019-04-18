@@ -17,9 +17,8 @@ class PermissionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['user']
 
-    @staticmethod
-    def validate_email(value):
-        print("FROM VALIDATE", value)
+    def validate_email(self, value, *args, **kwargs):
+
         user = User.objects.filter(email=value).first()
         if user is None:
             raise serializers.ValidationError("User with this email does not exist")
@@ -33,10 +32,22 @@ class PermissionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Permission should be STAFF or EDITOR")
         return value
 
+    def validate(self, attrs):
+        request = self.context.get('request')
+        dict = request.parser_context.get('kwargs')
+        desk_id = dict['desk_id']
+        user_id = attrs.pop('email')
+        attrs.__setitem__('user', user_id)
+        row = PermissionRow.objects.filter(user_id=user_id, related_desk_id=desk_id)
+        if row.exists():
+            raise serializers.ValidationError("This user is already participant of desk.")
+
+        return attrs
+
     def create(self, validated_data):
 
-        obj = PermissionRow.objects.create(user_id=validated_data['email'],
-                                           permission=validated_data['permission'],
+        obj = PermissionRow.objects.create(user_id=validated_data['user'],
+                                           permission=validated_data['permission'].upper(),
                                            related_desk_id=validated_data['related_desk_id'])
         obj.save()
         return obj

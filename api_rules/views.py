@@ -10,27 +10,33 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user_auth.models import UsersDesks
 from redis_manager.permission_cache_manager import PermissionCacheManager
+from django.http import QueryDict
 
 User = get_user_model()
 
 
 class SetUsersPermissionsAPIView(generics.CreateAPIView,
-                                 generics.ListAPIView
+                                 generics.ListAPIView,
+                                 generics.UpdateAPIView,
+                                 generics.DestroyAPIView,
                                  ):
-
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     serializer_class = PermissionSerializer
     queryset = PermissionRow.objects.select_related("related_desk").select_related("user").all()
 
+    def get_serializer_class(self, *args, **kwargs):
+        serializer_class = PermissionSerializer
+        if self.request.method == "POST":
+            serializer_class = PermissionSerializer
+
+        elif self.request.method in ("PUT", "PATCH", "DELETE"):
+            serializer_class = UpdatePermissionRowSerializer
+
+        return serializer_class
+
     def get_queryset(self):
         qs = self.queryset.filter(related_desk_id=self.kwargs["desk_id"])
-
-        # check if user has permissions to see these permission rows
-        #perm = qs.filter(user_id=self.request.user).first()
-
-        # if perm is None:
-        #     return Response({"detail": "You do not have permission to perform this action"}, status=403)
 
         return qs
 
@@ -54,34 +60,25 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
         Use this method in order to add a new user with some permission to Desk
         """
 
-        # desk = Desk.objects.prefetch_related("permissionrow_set__user").filter(id=self.kwargs['desk_id']).first()
+        # add ability to change QueryDict
+        data = QueryDict(mutable=True)
+        data.update(request.data)
 
-        # if desk is None:
-        #     return Response({"error": f"desk with selected id does not exists"}, status=400)
-
-        # # check if user has access to add new users to this desk
-        # self.check_object_permissions(request, desk)
-
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=data, many=isinstance(data, list))
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
 
-        obj = None
-        try:
-            obj = self.perform_create(serializer)
-
-        except IntegrityError:
-            return Response({"detail": "This user already has a "
-                                      "permission in selected group. use PATCH"
-                                      "method to change his permission"}, status=403)
-
+        obj = serializer.instance
         headers = self.get_success_headers(serializer.data)
 
         rel = UsersDesks.objects.create(user_id=obj.user_id, desks_id=self.kwargs['desk_id'])
         rel.save()
 
         # update cache
-        PermissionCacheManager.update_cache_of_user(user_id=obj.user_id, permission=obj.permission, desk_id=self.kwargs['desk_id'])
-        
+        PermissionCacheManager.update_cache_of_user(user_id=obj.user_id,
+                                                    permission=obj.permission,
+                                                    desk_id=self.kwargs['desk_id'])
+
         return Response(serializer.data, status=201, headers=headers)
 
 
@@ -95,8 +92,6 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
 
     def get_object(self):
 
-        #obj = #PermissionRow.objects.prefetch_related("user").select_related("related_desk") \
-        print(self.request.data)
         obj = self.queryset.filter(related_desk_id=self.kwargs['desk_id'], user_id=self.request.data['user']).first()
 
         return obj
@@ -114,21 +109,22 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         obj = self.get_object()
 
         if obj is None:
-            return Response({"error": f"permission for this user does not exist"}, status=400)
+            return Response({"error": "permission for this user does not exist"}, status=400)
 
         if obj.permission == "ADMIN":
             return Response({"detail": "You cannot change admin's role"}, status=403)
-        
-        serializer = self.get_serializer(obj, data=request.data)
+
+        serializer = self.get_serializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
+
         # update permission in cache if user's data is in memory
         post_data = request.data
         user_id = post_data['user']
-        
-        PermissionCacheManager.update_cache_of_user(user_id=user_id, permission=post_data['permission'], desk_id=self.kwargs['desk_id'])
-            
+
+        PermissionCacheManager.update_cache_of_user(user_id=user_id, permission=post_data['permission'],
+                                                    desk_id=self.kwargs['desk_id'])
+
         if getattr(obj, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
@@ -152,7 +148,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
 
         # Remove record from UsersDesks table
         user_id = request.data.get('user')
-        rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete() 
+        rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete()
 
         # update cache
         PermissionCacheManager.delete_user_cache_row(user_id=user_id, desk_id=obj.related_desk_id)
