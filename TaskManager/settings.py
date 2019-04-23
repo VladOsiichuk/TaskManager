@@ -199,7 +199,7 @@ MEDIA_URL = "/media/"
 
 CACHE_TTL = 3
 REDIS_URL = 'redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289'
-r = redis.from_url(REDIS_URL)
+r = redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379'))
 print(type(r))
 # development url redis = redis://127.0.0.1:6379/1
 # redis_url = os.getenv('REDISTOGO_URL')
