@@ -19,6 +19,7 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
                                  generics.ListAPIView,
                                  generics.UpdateAPIView,
                                  generics.DestroyAPIView,
+                                 generics.ListCreateAPIView
                                  ):
     authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
@@ -62,6 +63,7 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
 
         # add ability to change QueryDict
         data = QueryDict(mutable=True)
+        print(type(request.data))
         data.update(request.data)
 
         serializer = self.get_serializer(data=data, many=isinstance(data, list))

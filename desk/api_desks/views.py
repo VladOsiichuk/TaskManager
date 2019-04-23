@@ -84,7 +84,6 @@ class DeskDetailAPIView(mixins.UpdateModelMixin,
                         generics.RetrieveAPIView,
                         ):
 
-    #permission_classes = [permissions.IsAuthenticated, IsEditorOfDeskOrHigher]
     authentication_classes = [SessionAuthentication]
     queryset = Desk.objects.prefetch_related("columns__tasks", "usersdesks_set__user").all()
     serializer_class = DeskSerializer
