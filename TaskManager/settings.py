@@ -211,7 +211,6 @@ print(type(r))
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "TIMEOUT": CACHE_TTL * 60,
         "CONFIG": {
             "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         },

@@ -7,7 +7,7 @@ from rest_framework import generics
 from redis_manager.permission_cache_manager import PermissionCacheManager
 from django.http import HttpResponse
 from rest_framework import permissions
-from rest_framework.views import APIView
+
 
 User = get_user_model()
 

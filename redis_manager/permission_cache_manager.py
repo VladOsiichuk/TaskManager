@@ -1,7 +1,11 @@
-from django.core.cache import cache
 from api_rules.models import PermissionRow
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.conf import settings
+from rest_framework.views import APIView
+import os
+import redis
+
+cache = redis.from_url(os.environ.get("REDIS_URL"))
 
 class PermissionCacheManager:
     """
