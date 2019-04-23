@@ -203,7 +203,7 @@ CACHE_TTL = 3
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289/1",
+        "LOCATION": os.environ.get('REDIS_URL'),
         "TIMEOUT": CACHE_TTL * 60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
