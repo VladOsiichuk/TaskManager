@@ -38,6 +38,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         pw2 = data.pop('password2')
 
         if pw != pw2:
+            # gg
             raise serializers.ValidationError("Passwords do not match")
 
         return data
