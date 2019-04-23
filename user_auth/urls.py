@@ -9,3 +9,4 @@ urlpatterns = [
     path('login/', AuthAPIView.as_view()),
     path('logout/', LogoutAPIView.as_view())
 ]
+
