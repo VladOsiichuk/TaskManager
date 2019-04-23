@@ -16,7 +16,6 @@ import redis
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-r = redis.from_url(os.environ.get("REDIS_URL"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -199,10 +198,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"
 
 CACHE_TTL = 3
+REDIS_URL = 'redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289'
+r = redis.from_url(os.environ.get('REDIS_URL'))
 # development url redis = redis://127.0.0.1:6379/1
+
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
+        "BACKEND": "redis_cache.RedisCache",
         "LOCATION": os.environ.get('REDIS_URL'),
         "TIMEOUT": CACHE_TTL * 60,
         "OPTIONS": {
