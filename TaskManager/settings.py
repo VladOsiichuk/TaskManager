@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import django_heroku
 import redis
-
+from redis import Redis
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -200,12 +200,18 @@ MEDIA_URL = "/media/"
 CACHE_TTL = 3
 REDIS_URL = 'redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289'
 r = redis.from_url(REDIS_URL)
+print(type(r))
 # development url redis = redis://127.0.0.1:6379/1
+# redis_url = os.getenv('REDISTOGO_URL')
+
+# urlparse.uses_netloc.append('redis')
+# url = urlparse.urlparse(redis_url)
+# conn = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
+        "LOCATION": os.environ.get("REDISCLOUD_URL", "redis://localhost:6379"),
         "TIMEOUT": CACHE_TTL * 60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
