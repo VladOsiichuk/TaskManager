@@ -91,7 +91,7 @@ function getDataRegister(event) {
           body: JSON.stringify(userRegister)
       };
 
-      requireAuth('https://0.0.0.0:8000/api-users/register/', option, requireAuthCallbackRegister);
+      requireAuth('http://0.0.0.0:8000/api-users/register/', option, requireAuthCallbackRegister);
 
       function requireAuthCallbackRegister(data) {
 
