@@ -91,7 +91,7 @@ function getDataRegister(event) {
           body: JSON.stringify(userRegister)
       };
 
-      requireAuth('http:127.0.0.1/api-users/register/', option, requireAuthCallbackRegister);
+      requireAuth('/api-users/register/', option, requireAuthCallbackRegister);
 
       function requireAuthCallbackRegister(data) {
 
