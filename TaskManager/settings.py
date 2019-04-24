@@ -36,8 +36,6 @@ CORS_ORIGIN_WHITELIST = (
   '*',
 )
 
-SECURE_SSL_REDIRECT = True
-
 CORS_ALLOW_HEADERS = (
   'accept',
   'cors',
