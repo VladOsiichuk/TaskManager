@@ -1,2 +1,2 @@
 node: cd client && node index.js
-python: gunicorn TaskManager.wsgi -b 0.0.0.0:8000
+python: gunicorn TaskManager.wsgi
