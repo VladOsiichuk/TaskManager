@@ -19,6 +19,7 @@ django-stubs==0.12.1
 djangorestframework==3.9.2
 djangorestframework-stubs==0.4.2
 gunicorn==19.9.0
+honcho==1.0.1
 idna==2.8
 isort==4.3.16
 itypes==1.1.0
@@ -30,6 +31,7 @@ mypy==0.700
 mypy-extensions==0.4.1
 Pillow==6.0.0
 psycopg2==2.8.2
+psycopg2-binary==2.8.2
 pylint==2.3.1
 pytz==2018.9
 redis==3.2.1

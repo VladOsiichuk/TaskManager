@@ -1,0 +1,41 @@
+.header {
+  height: 100px;
+  .logo {
+    height: 100px;
+    display: block;
+    text-align: center;
+    outline: none;
+    img {
+      margin-top: 5px;
+      height: 90px;
+    }
+  }
+  .name {
+    height: 100px;
+    h3 {
+      margin: 0;
+      text-align: center;
+      line-height: 100px;
+    }
+  }
+  .menu-drop,
+  .create-desk {
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #log-out-account {
+    img {
+      margin-right: 5px;
+    }
+    i {
+      margin-left: 5px;
+    }
+    &:hover {
+      cursor: pointer;
+      text-decoration: none;
+    }
+  }
+
+}
