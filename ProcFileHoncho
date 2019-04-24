@@ -1,2 +1,2 @@
 node: cd client && node index.js
-python: gunicorn TaskManager.wsgi -b 127.0.0.1:8000
+python: gunicorn TaskManager.wsgi -b 127.0.0.1:$PORT
