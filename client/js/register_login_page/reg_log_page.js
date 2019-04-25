@@ -61,6 +61,8 @@ function getDataLogin(event) {
 // Require Register
 
 let userRegister = {};
+var ip = location.host;
+console.log(ip);
 
 document.getElementById('register-submit').addEventListener('click', getDataRegister);
 
