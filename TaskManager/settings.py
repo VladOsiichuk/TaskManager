@@ -28,12 +28,12 @@ DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 
-ALLOWED_HOSTS = ["evening-inlet-45238.herokuapp.com", "*", "localhost"]
+ALLOWED_HOSTS = ["evening-inlet-45238.herokuapp.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
-  '*',
+  "evening-inlet-45238.herokuapp.com"
 )
 
 CORS_ALLOW_HEADERS = (

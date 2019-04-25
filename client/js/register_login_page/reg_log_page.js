@@ -91,7 +91,7 @@ function getDataRegister(event) {
           body: JSON.stringify(userRegister)
       };
 
-      requireAuth('http://fixie:22ZOYXjZje1Bk14@velodrome.usefixie.com:80/api-users/register/', option, requireAuthCallbackRegister);
+      requireAuth('http://127.0.0.1:8000/api-users/register/', option, requireAuthCallbackRegister);
 
       function requireAuthCallbackRegister(data) {
 
