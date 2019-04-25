@@ -41,7 +41,7 @@ function getDataLogin(event) {
           body: JSON.stringify(userLogin)
       };
 
-      requireAuth('http://52.3.45.217:8000/api-users/login/', option, requireAuthCallbackLogin);
+      requireAuth('http://127.0.0.1:8000/api-users/login/', option, requireAuthCallbackLogin);
 
       function requireAuthCallbackLogin(data) {
           if (data.status !== 200) {
@@ -93,7 +93,7 @@ function getDataRegister(event) {
           body: JSON.stringify(userRegister)
       };
 
-      requireAuth('http://127.0.0.1:8000/api-users/register/', option, requireAuthCallbackRegister);
+      requireAuth('https://127.0.0.1:8000/api-users/register/', option, requireAuthCallbackRegister);
 
       function requireAuthCallbackRegister(data) {
 

@@ -27,11 +27,13 @@ SECRET_KEY = 'p%z_0!2_zk$hrx@+!m+&zyb@sz*^uo@xb=gb)kl%vf7!qr403g'
 DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = DEBUG
+PORT = os.environ.get('PORT')
+url = "127.0.0.1:" + PORT
 
 ALLOWED_HOSTS = (
   "evening-inlet-45238.herokuapp.com",
   "evening-inlet-45238.herokuapp.com/",
-  "127.0.0.1:5000",
+  url,
   "52.3.45.217:80",
   "52.3.45.217:5000",
   "https://evening-inlet-45238.herokuapp.com",
@@ -39,13 +41,12 @@ ALLOWED_HOSTS = (
   "http://evening-inlet-45238.herokuapp.com",
   "http://evening-inlet-45238.herokuapp.com/",
 )
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
   "evening-inlet-45238.herokuapp.com",
   "evening-inlet-45238.herokuapp.com/",
-  "127.0.0.1:5000",
+  url,
   "52.3.45.217:80",
   "52.3.45.217:5000",
   "https://evening-inlet-45238.herokuapp.com",
