@@ -31,28 +31,12 @@ PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + PORT
 
 ALLOWED_HOSTS = (
-  "evening-inlet-45238.herokuapp.com",
-  "evening-inlet-45238.herokuapp.com/",
-  url,
-  "52.3.45.217:80",
-  "52.3.45.217:5000",
-  "https://evening-inlet-45238.herokuapp.com",
-  "https://evening-inlet-45238.herokuapp.com/",
-  "http://evening-inlet-45238.herokuapp.com",
-  "http://evening-inlet-45238.herokuapp.com/",
+ "*"
 )
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
-  "evening-inlet-45238.herokuapp.com",
-  "evening-inlet-45238.herokuapp.com/",
-  url,
-  "52.3.45.217:80",
-  "52.3.45.217:5000",
-  "https://evening-inlet-45238.herokuapp.com",
-  "https://evening-inlet-45238.herokuapp.com/",
-  "http://evening-inlet-45238.herokuapp.com",
-  "http://evening-inlet-45238.herokuapp.com/",
+ "*"
 )
 
 CORS_ALLOW_HEADERS = (
