@@ -7,5 +7,5 @@ const PORT = process.env.PORT || 10000
 http.createServer(function(req, res) {
     file.serve(req, res);
 }).listen(PORT);
-
+console.log(`IP = ${ location.host }`);
 console.log(`Server running on port ${ PORT }`);

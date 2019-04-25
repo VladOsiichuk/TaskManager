@@ -33,7 +33,9 @@ ALLOWED_HOSTS = ["evening-inlet-45238.herokuapp.com"]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
-  "evening-inlet-45238.herokuapp.com"
+  "evening-inlet-45238.herokuapp.com",
+  "52.3.45.217:80",
+  "52.3.45.217:5000"
 )
 
 CORS_ALLOW_HEADERS = (

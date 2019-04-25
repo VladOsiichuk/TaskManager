@@ -41,7 +41,7 @@ function getDataLogin(event) {
           body: JSON.stringify(userLogin)
       };
 
-      requireAuth('http://0.0.0.0:8000/api-users/login/', option, requireAuthCallbackLogin);
+      requireAuth('http://52.3.45.217:8000/api-users/login/', option, requireAuthCallbackLogin);
 
       function requireAuthCallbackLogin(data) {
           if (data.status !== 200) {
