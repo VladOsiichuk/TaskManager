@@ -29,14 +29,20 @@ DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + PORT
+print(url)
 
 ALLOWED_HOSTS = (
- "*"
+    "*",
+    url,
+    "evening-inlet-45238.herokuapp.com"
 )
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
- "*"
+    "*",
+    url,
+    "evening-inlet-45238.herokuapp.com"
 )
 
 CORS_ALLOW_HEADERS = (
@@ -248,5 +254,5 @@ DEBUG_TOOLBAR_PANELS = [
     ]
 SHOW_TOOLBAR_CALLBACK = True
 
-INTERNAL_IPS = ('127.0.0.1', '0.0.0.0')
+INTERNAL_IPS = ('127.0.0.1', '0.0.0.0', "evening-inlet-45238.herokuapp.com")
 django_heroku.settings(locals())
