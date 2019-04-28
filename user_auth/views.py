@@ -32,7 +32,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             logout(request)
-
+        print("register works...")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -64,7 +64,7 @@ class AuthAPIView(generics.CreateAPIView):
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        print(request.user.is_active)
+        print("login works....")
         if request.user.is_active:
             return Response({'detail': 'user is already authenticated'}, status=400)
 
