@@ -1,7 +1,7 @@
 let http = require('http');
 let static = require('node-static');
 let file = new static.Server('.');
-const PORT = 10000;
+const PORT = process.env.PORT || 10000;
 
 
 http.createServer(function(req, res) {
