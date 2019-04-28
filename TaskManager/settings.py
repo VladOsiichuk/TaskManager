@@ -28,7 +28,7 @@ DEBUG = True
 
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 PORT = os.environ.get('PORT')
-url = "127.0.0.1:" + PORT
+url = "127.0.0.1:" + "10000"
 print(url)
 
 ALLOWED_HOSTS = (
