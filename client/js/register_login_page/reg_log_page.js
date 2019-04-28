@@ -44,6 +44,7 @@ function getDataLogin(event) {
       requireAuth('http://127.0.0.1:8000/api-users/login/', option, requireAuthCallbackLogin);
 
       function requireAuthCallbackLogin(data) {
+          console.log(data);
           if (data.status !== 200) {
               let div = document.createElement('div');
               div.classList.add('error');
@@ -96,7 +97,7 @@ function getDataRegister(event) {
       requireAuth('https://127.0.0.1:8000/api-users/register/', option, requireAuthCallbackRegister);
 
       function requireAuthCallbackRegister(data) {
-
+          console.log(data);
           if (data.status !== 201) {
               let forTextError = data.json();
               forTextError
