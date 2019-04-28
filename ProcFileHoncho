@@ -1,2 +1,1 @@
-node: cd client && node index.js
 python: gunicorn TaskManager.wsgi
