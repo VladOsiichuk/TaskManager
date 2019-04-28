@@ -8,7 +8,8 @@ from redis_manager.permission_cache_manager import PermissionCacheManager
 from django.http import HttpResponse
 from rest_framework import permissions
 from rest_framework.views import APIView
-
+from django.conf import settings
+from django.middleware.csrf import get_token
 
 User = get_user_model()
 
@@ -45,7 +46,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         user = authenticate(request, email=email, password=password)
 
         login(request, user)
-
+        print(request.session.session_key)
         # write user's data in cookie
         response = Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         response = set_users_cookie(user, response)
@@ -82,27 +83,32 @@ class AuthAPIView(generics.CreateAPIView):
             
             response = Response({"detail": "Successfully authenticated. See cookie"}, status=200)
             
-            response = set_users_cookie(user, response)
+            response = set_users_cookie(user, response, request)
             return response
 
         return Response({"error": "invalid credentials"}, status=401)
 
 
-def set_users_cookie(user, response):
+def set_users_cookie(user, response, request):
 
     user_data = {
                 "id": user.id,
                 "email": user.email,
                 "username": user.username,
                 "first_name": user.first_name,
-                "last_name": user.last_name
+                "last_name": user.last_name,
+                "sessionid": request.session.session_key,
+                "csrftoken": get_token(request)
             }
+    domain = settings.SESSION_COOKIE_DOMAIN
 
-    response.set_cookie("email", user_data["email"])
-    response.set_cookie("user_id", user_data["id"])
-    response.set_cookie("username", user_data["username"])
-    response.set_cookie("first_name", user_data["first_name"])
-    response.set_cookie("last_name", user_data["last_name"])
+    response.set_cookie("sessionid", user_data["sessionid"], domain=domain)
+    response.set_cookie("csrftoken", user_data["csrftoken"], domain=domain)
+    response.set_cookie("email", user_data["email"], domain=domain)
+    response.set_cookie("user_id", user_data["id"], domain=domain)
+    response.set_cookie("username", user_data["username"], domain=domain)
+    response.set_cookie("first_name", user_data["first_name"], domain=domain)
+    response.set_cookie("last_name", user_data["last_name"], domain=domain)
 
     return response
 
