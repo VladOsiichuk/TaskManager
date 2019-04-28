@@ -30,11 +30,12 @@ CORS_ORIGIN_ALLOW_ALL = DEBUG
 PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + "10000"
 print(url)
-
+DOMAIN_FRONT = "evening-inlet-45238.herokuapp.com"
+SESSION_COOKIE_DOMAIN = DOMAIN_FRONT
 ALLOWED_HOSTS = (
     "*",
     "127.0.0.1",
-    "evening-inlet-45238.herokuapp.com"
+    DOMAIN_FRONT
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -42,7 +43,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
     "*",
     "127.0.0.1",
-    "evening-inlet-45238.herokuapp.com"
+    DOMAIN_FRONT
 )
 
 CORS_ALLOW_HEADERS = (
