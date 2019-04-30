@@ -29,9 +29,7 @@ DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + "10000"
-print(url)
 DOMAIN_FRONT = "protected-mountain-24825.herokuapp.com"
-SESSION_COOKIE_DOMAIN = DOMAIN_FRONT
 ALLOWED_HOSTS = (
     "*",
     "127.0.0.1",
