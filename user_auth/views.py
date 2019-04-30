@@ -48,8 +48,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         login(request, user)
         print(request.session.session_key)
         # write user's data in cookie
-        response = Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        response = set_users_cookie(user, response)
+        response = Response(set_users_cookie(user, request), status=status.HTTP_201_CREATED, headers=headers)
 
         return response
 
@@ -81,18 +80,18 @@ class AuthAPIView(generics.CreateAPIView):
                 
             login(request, user)
             
-            response = Response({"detail": "Successfully authenticated. See cookie"}, status=200)
+            response = Response(set_users_cookie(user, request), status=200)
             
-            response = set_users_cookie(user, response, request)
+            #response = set_users_cookie(user, response, request)
             return response
 
         return Response({"error": "invalid credentials"}, status=401)
 
 
-def set_users_cookie(user, response, request):
+def set_users_cookie(user, request):
 
     user_data = {
-                "id": user.id,
+                "user_id": user.id,
                 "email": user.email,
                 "username": user.username,
                 "first_name": user.first_name,
@@ -100,17 +99,20 @@ def set_users_cookie(user, response, request):
                 "sessionid": request.session.session_key,
                 "csrftoken": get_token(request)
             }
-    domain = settings.SESSION_COOKIE_DOMAIN
 
-    response.set_cookie("sessionid", user_data["sessionid"], domain=domain)
-    response.set_cookie("csrftoken", user_data["csrftoken"], domain=domain)
-    response.set_cookie("email", user_data["email"], domain=domain)
-    response.set_cookie("user_id", user_data["id"], domain=domain)
-    response.set_cookie("username", user_data["username"], domain=domain)
-    response.set_cookie("first_name", user_data["first_name"], domain=domain)
-    response.set_cookie("last_name", user_data["last_name"], domain=domain)
-
-    return response
+    return user_data
+    #
+    # domain = settings.SESSION_COOKIE_DOMAIN
+    #
+    # response.set_cookie("sessionid", user_data["sessionid"], domain=domain)
+    # response.set_cookie("csrftoken", user_data["csrftoken"], domain=domain)
+    # response.set_cookie("email", user_data["email"], domain=domain)
+    # response.set_cookie("user_id", user_data["user_id"], domain=domain)
+    # response.set_cookie("username", user_data["username"], domain=domain)
+    # response.set_cookie("first_name", user_data["first_name"], domain=domain)
+    # response.set_cookie("last_name", user_data["last_name"], domain=domain)
+    #
+    # return response
 
 
 class LogoutAPIView(APIView):
