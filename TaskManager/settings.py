@@ -54,6 +54,7 @@ CORS_ALLOW_HEADERS = (
   'content-type',
   'dnt',
   'origin',
+  'sessionid',
   'user-agent',
   'x-csrftoken',
   "csrftoken",
