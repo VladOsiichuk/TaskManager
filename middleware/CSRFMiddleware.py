@@ -9,6 +9,7 @@ class CSRF:
 
     def __call__(self, request):
         #print(request.data)
+        request._dont_enforce_csrf_checks = True
         print('request')
         response = self.get_response(request)
         if isinstance(response, Response):

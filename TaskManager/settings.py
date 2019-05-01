@@ -39,7 +39,7 @@ CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [DOMAIN_FRONT]
-#CSRF_USE_SESSIONS = True
+CSRF_USE_SESSIONS = True
 
 
 ALLOWED_HOSTS = (
@@ -101,18 +101,22 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 'middleware.CSRFMiddleware.CSRF',
+
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
-    'middleware.SessionDomainMiddleware.SessionHostDomainMiddleware',
+
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 'middleware.PermissionCache.PermissionCacheMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
+
 
 
 
