@@ -12,7 +12,7 @@ class CSRF:
         print('request')
         response = self.get_response(request)
         if isinstance(response, Response):
-            response.data['gg'] = 'gg'
+            #response.data['gg'] = 'gg'
             print(response.data)
             print(response.cookies)
             #response.data
