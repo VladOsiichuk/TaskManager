@@ -103,7 +103,7 @@ MIDDLEWARE = [
 'middleware.CSRFMiddleware.CSRF',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'middleware.SessionDomainMiddleware.SessionHostDomainMiddleware',
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
