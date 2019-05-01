@@ -31,9 +31,10 @@ PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + "10000"
 print(url)
 DOMAIN_FRONT = "protected-mountain-24825.herokuapp.com"
-CSRF_COOKIE_DOMAIN = ".herokuapp.com"
-SESSION_COOKIE_DOMAIN = ".herokuapp.com"
+CSRF_COOKIE_DOMAIN = None
+SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_HTTPONLY = False
@@ -98,17 +99,23 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+'middleware.CSRFMiddleware.CSRF',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+'middleware.PermissionCache.PermissionCacheMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
-    'middleware.PermissionCache.PermissionCacheMiddleware',
+
+
+
+
 ]
 
 ROOT_URLCONF = 'TaskManager.urls'

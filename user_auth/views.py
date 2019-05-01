@@ -49,7 +49,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         print(request.session.session_key)
         # write user's data in cookie
         response = Response(set_users_cookie(user, request), status=status.HTTP_201_CREATED, headers=headers)
-
+        response.set_cookie("username", user.username)
         return response
 
 

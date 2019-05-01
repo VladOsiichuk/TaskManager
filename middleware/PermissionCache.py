@@ -19,5 +19,6 @@ class PermissionCacheMiddleware:
 
         else:
             response = self.get_response(request)
-        print(response)
+
+        print(response.cookies)
         return response
