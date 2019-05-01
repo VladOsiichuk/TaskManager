@@ -9,6 +9,7 @@ class CSRF:
     def __call__(self, request):
         #print(request.data)
         response = self.get_response(request)
+        return  response
         print("FROM MIDDLEWARE")
         print(response.cookies['csrftoken'].value)
         print(response.data['csrftoken'])
