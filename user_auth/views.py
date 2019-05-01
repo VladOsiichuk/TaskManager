@@ -48,6 +48,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         login(request, user)
         print(request.session.session_key)
         # write user's data in cookie
+
         response = Response(set_users_cookie(user, request), status=status.HTTP_201_CREATED, headers=headers)
         response.set_cookie("username", user.username, domain="protected-mountain-24825.herokuapp.com")
         return response
@@ -81,7 +82,7 @@ class AuthAPIView(generics.CreateAPIView):
             login(request, user)
             
             response = Response(set_users_cookie(user, request), status=200)
-            
+            print("view...")
             #response = set_users_cookie(user, response, request)
             return response
 

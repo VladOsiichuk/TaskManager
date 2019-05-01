@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.conf import settings
-
+from rest_framework.response import Response
+import json
 
 class CSRF:
     def __init__(self, get_response):
@@ -8,10 +9,14 @@ class CSRF:
 
     def __call__(self, request):
         #print(request.data)
+        print('request')
         response = self.get_response(request)
-        return  response
-        print("FROM MIDDLEWARE")
-        print(response.cookies['csrftoken'].value)
-        print(response.data['csrftoken'])
-        response.data['csrftoken']= response.cookies['csrftoken'].value
+        if isinstance(response, Response):
+            response.data['gg'] = 'gg'
+            print(response.data)
+            print(response.cookies)
+            #response.data
+            #response.context_data['asda'] = "as"
+            response.data = json.dumps(response.data)
+        print('response...')
         return response
