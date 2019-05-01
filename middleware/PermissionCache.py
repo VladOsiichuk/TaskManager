@@ -7,7 +7,6 @@ class PermissionCacheMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        
         if request.user.is_authenticated:
 
             user_id = request.user.id
@@ -17,8 +16,8 @@ class PermissionCacheMiddleware:
             cache.expire(user_id, timeout=ttl*60)
 
             response = self.get_response(request)
-            return response
-        
+
         else:
             response = self.get_response(request)
-            return response
+        print(response)
+        return response

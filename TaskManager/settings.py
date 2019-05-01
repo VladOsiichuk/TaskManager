@@ -35,6 +35,7 @@ CSRF_COOKIE_DOMAIN = DOMAIN_FRONT
 SESSION_COOKIE_DOMAIN = DOMAIN_FRONT
 SESSION_COOKIE_SAMESITE = None
 CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_HTTPONLY = True
 
 CSRF_TRUSTED_ORIGINS = [DOMAIN_FRONT]
 
@@ -97,7 +98,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django_cookies_samesite.middleware.CookiesSameSite',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
