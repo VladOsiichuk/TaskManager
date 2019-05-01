@@ -31,8 +31,8 @@ PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + "10000"
 print(url)
 DOMAIN_FRONT = "protected-mountain-24825.herokuapp.com"
-CSRF_COOKIE_DOMAIN = DOMAIN_FRONT
-SESSION_COOKIE_DOMAIN = DOMAIN_FRONT
+CSRF_COOKIE_DOMAIN = ".herokuapp.com"
+SESSION_COOKIE_DOMAIN = ".herokuapp.com"
 SESSION_COOKIE_SAMESITE = None
 CSRF_COOKIE_SAMESITE = None
 CSRF_COOKIE_HTTPONLY = False
