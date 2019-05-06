@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'clear_cache',
 ]
 
+
 MIDDLEWARE = [
 'middleware.CSRFMiddleware.CSRF',
 
