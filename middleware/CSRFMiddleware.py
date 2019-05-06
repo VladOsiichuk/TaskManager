@@ -10,9 +10,9 @@ class CSRF:
 
     def __call__(self, request):
         print(settings.CSRF_TRUSTED_ORIGINS)
-        print(request.META["REMOTE_HOST"])
-        if request.META["REMOTE_HOST"] in settings.CSRF_TRUSTED_ORIGINS:
-            print("META WORKS!")
-            request._dont_enforce_csrf_checks = True
+        print(request.META)
+        #if request.META["REMOTE_HOST"] in settings.CSRF_TRUSTED_ORIGINS:
+        print("META WORKS!")
+        request._dont_enforce_csrf_checks = True
         response = self.get_response(request)
         return response
