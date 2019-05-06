@@ -11,7 +11,7 @@ class CSRF:
     def __call__(self, request):
         print(settings.ALLOWED_HOSTS)
         print(request.get_host())
-        if request.META["REMOTE_HOST"] in settings.ALLOWED_HOSTS:
+        if request.META["HTTP_REFERER"] in settings.CSRF_TRUSTED_ORIGINS:
             request._dont_enforce_csrf_checks = True
         response = self.get_response(request)
         return response
