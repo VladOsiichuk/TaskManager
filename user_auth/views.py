@@ -32,7 +32,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
     authentication_classes = []
 
     def create(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
+        if request.user.is_active:
             logout(request)
         print("register works...")
         serializer = self.get_serializer(data=request.data)

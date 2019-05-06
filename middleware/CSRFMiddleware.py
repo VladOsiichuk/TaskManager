@@ -10,7 +10,7 @@ class CSRF:
 
     def __call__(self, request):
         print(request.COOKIES)
-        # if request.META["HTTP_ORIGIN"] in settings.CSRF_TRUSTED_ORIGINS:
-        #     request._dont_enforce_csrf_checks = True
+        if request.META["HTTP_ORIGIN"] in settings.CSRF_TRUSTED_ORIGINS:
+            request._dont_enforce_csrf_checks = True
         response = self.get_response(request)
         return response
