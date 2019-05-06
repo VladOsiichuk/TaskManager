@@ -33,6 +33,9 @@ class UserRegisterAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         if request.user.is_active:
+            from django.contrib.auth.models import AnonymousUser
+            request.user = AnonymousUser()
+            request.session.flush()
             logout(request)
         print("register works...")
         serializer = self.get_serializer(data=request.data)
