@@ -29,8 +29,9 @@ DEBUG = True
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 PORT = os.environ.get('PORT')
 url = "127.0.0.1:" + "10000"
-print(url)
+
 DOMAIN_FRONT = "protected-mountain-24825.herokuapp.com"
+
 CSRF_COOKIE_DOMAIN = None
 SESSION_COOKIE_DOMAIN = None
 SESSION_COOKIE_SAMESITE = None
@@ -109,18 +110,13 @@ MIDDLEWARE = [
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-'middleware.PermissionCache.PermissionCacheMiddleware',
+    'middleware.PermissionCache.PermissionCacheMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'querycount.middleware.QueryCountMiddleware',
-
-
-
-
-
 ]
 
 ROOT_URLCONF = 'TaskManager.urls'
@@ -232,26 +228,6 @@ CACHE_TTL = 3
 REDIS_URL = 'redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289'
 r = redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379'))
 print(type(r))
-# development url redis = redis://127.0.0.1:6379/1
-# redis_url = os.getenv('REDISTOGO_URL')
-
-# urlparse.uses_netloc.append('redis')
-# url = urlparse.urlparse(redis_url)
-# conn = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
-
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289",
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#             "PASSWORD": "mysecret"
-#         }
-#         # "CONFIG": {
-#         #     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
-#         # },
-#     }
-# }
 
 CACHES = {
     "default": {
