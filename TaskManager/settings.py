@@ -44,18 +44,19 @@ CSRF_USE_SESSIONS = True
 
 
 ALLOWED_HOSTS = (
+    DOMAIN_FRONT,
     "*",
     "127.0.0.1",
-    DOMAIN_FRONT
 )
 
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
+    DOMAIN_FRONT,
     "*",
     "127.0.0.1",
-    DOMAIN_FRONT
+
 )
 
 CORS_ALLOW_HEADERS = (
@@ -254,4 +255,10 @@ DEBUG_TOOLBAR_PANELS = [
 SHOW_TOOLBAR_CALLBACK = True
 
 INTERNAL_IPS = ('127.0.0.1', '0.0.0.0', "evening-inlet-45238.herokuapp.com")
-django_heroku.settings(locals())
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'vladddosiichuk@gmail.com'
+EMAIL_HOST_PASSWORD = 'qvKquC7A'

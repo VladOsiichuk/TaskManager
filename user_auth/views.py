@@ -10,6 +10,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from django.conf import settings
 from django.middleware.csrf import get_token
+from django.core.mail import send_mail
 
 User = get_user_model()
 
@@ -48,7 +49,7 @@ class UserRegisterAPIView(generics.CreateAPIView):
         login(request, user)
         print(request.session.session_key)
         # write user's data in cookie
-
+        send(request, email)
         response = Response(set_users_cookie(user, request), status=status.HTTP_201_CREATED, headers=headers)
         response.set_cookie("username", user.username, domain="protected-mountain-24825.herokuapp.com")
         return response
@@ -86,7 +87,7 @@ class AuthAPIView(generics.CreateAPIView):
             #response = set_users_cookie(user, response, request)
             return response
 
-        return Response({"error": "invalid credentials"}, status=401)
+        return Response({"error": "invalid credentials"}, status=400)
 
 
 def set_users_cookie(user, request):
@@ -102,18 +103,6 @@ def set_users_cookie(user, request):
             }
 
     return user_data
-    #
-    # domain = settings.SESSION_COOKIE_DOMAIN
-    #
-    # response.set_cookie("sessionid", user_data["sessionid"], domain=domain)
-    # response.set_cookie("csrftoken", user_data["csrftoken"], domain=domain)
-    # response.set_cookie("email", user_data["email"], domain=domain)
-    # response.set_cookie("user_id", user_data["user_id"], domain=domain)
-    # response.set_cookie("username", user_data["username"], domain=domain)
-    # response.set_cookie("first_name", user_data["first_name"], domain=domain)
-    # response.set_cookie("last_name", user_data["last_name"], domain=domain)
-    #
-    # return response
 
 
 class LogoutAPIView(APIView):
@@ -132,3 +121,18 @@ class LogoutAPIView(APIView):
         response.delete_cookie("last_name")
 
         return response
+
+
+def send(request, email):
+
+    subject = "Hi for registering"
+    message = "This is message."
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=email_from,
+        recipient_list=recipient_list
+    )
