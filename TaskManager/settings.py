@@ -100,7 +100,8 @@ INSTALLED_APPS = [
     'user_auth.apps.UserConfig',
     'desk.apps.DeskConfig',
     'api_rules.apps.RulesConfig',
-    'debug_toolbar'
+    'debug_toolbar',
+    'clear_cache',
 ]
 
 MIDDLEWARE = [
