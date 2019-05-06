@@ -9,6 +9,8 @@ class CSRF:
         self.get_response = get_response
 
     def __call__(self, request):
+        print(settings.ALLOWED_HOSTS)
+        print(request.get_host())
         if request.get_host() in settings.ALLOWED_HOSTS:
             request._dont_enforce_csrf_checks = True
         response = self.get_response(request)
