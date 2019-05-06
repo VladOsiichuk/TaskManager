@@ -228,7 +228,6 @@ MEDIA_URL = "/media/"
 CACHE_TTL = 3
 REDIS_URL = 'redis://h:p2d702b5c7911598eac4db7013d7d9d4d8e750b065f0b2db0b472457152085599@ec2-34-193-212-83.compute-1.amazonaws.com:15289'
 r = redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379'))
-print(type(r))
 
 CACHES = {
     "default": {
