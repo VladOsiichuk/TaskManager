@@ -107,13 +107,10 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-'middleware.CSRFMiddleware.CSRF',
-
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'middleware.CSRFMiddleware.CSRF',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-
     'django.middleware.security.SecurityMiddleware',
-
-
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -125,6 +122,7 @@ MIDDLEWARE = [
     'querycount.middleware.QueryCountMiddleware',
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 ROOT_URLCONF = 'TaskManager.urls'
 
 QUERYCOUNT = {
@@ -212,7 +210,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = ()
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
