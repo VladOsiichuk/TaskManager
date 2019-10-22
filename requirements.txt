@@ -31,7 +31,7 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 mypy==0.700
 mypy-extensions==0.4.1
-Pillow==6.0.0
+Pillow==6.2.0
 psycopg2==2.8.2
 psycopg2-binary==2.8.2
 pylint==2.3.1
