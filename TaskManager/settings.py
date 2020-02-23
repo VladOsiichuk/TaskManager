@@ -72,8 +72,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'user_auth.apps.UserConfig',
     'desk.apps.DeskConfig',
-    'api_rules.apps.RulesConfig',
-    'debug_toolbar'
+    'api_rules.apps.RulesConfig'
 ]
 
 MIDDLEWARE = [
