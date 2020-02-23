@@ -9,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from user_auth.models import UsersDesks
-from redis_manager.permission_cache_manager import PermissionCacheManager
+from redis_manager.cache_manager import CacheManager
 
 User = get_user_model()
 
@@ -80,7 +80,7 @@ class SetUsersPermissionsAPIView(generics.CreateAPIView,
         rel.save()
 
         # update cache
-        PermissionCacheManager.update_cache_of_user(user_id=obj.user_id, permission=obj.permission, desk_id=self.kwargs['desk_id'])
+        CacheManager.update_cache_of_user(user_id=obj.user_id, permission=obj.permission, desk_id=self.kwargs['desk_id'])
         
         return Response(serializer.data, status=201, headers=headers)
 
@@ -127,7 +127,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         post_data = request.data
         user_id = post_data['user']
         
-        PermissionCacheManager.update_cache_of_user(user_id=user_id, permission=post_data['permission'], desk_id=self.kwargs['desk_id'])
+        CacheManager.update_cache_of_user(user_id=user_id, permission=post_data['permission'], desk_id=self.kwargs['desk_id'])
             
         if getattr(obj, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
@@ -155,7 +155,7 @@ class UpdateUsersPermissionsAPIView(generics.UpdateAPIView,
         rel_to_desk = UsersDesks.objects.filter(user_id=user_id, desks_id=obj.related_desk.id).delete() 
 
         # update cache
-        PermissionCacheManager.delete_user_cache_row(user_id=user_id, desk_id=obj.related_desk_id)
+        CacheManager.delete_user_cache_row(user_id=user_id, desk_id=obj.related_desk_id)
 
         # Delete permission and user from desk
         obj.delete()

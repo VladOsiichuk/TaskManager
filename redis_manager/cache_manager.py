@@ -3,9 +3,9 @@ from api_rules.models import PermissionRow
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.conf import settings
 
-class PermissionCacheManager:
+class CacheManager:
     """
-    In cache we store data related to the permissions of users. data can be got using ID of user (cache.get(user_id))
+    In cache we store data related to the permissions of users. data can be get using ID of user key
     """
     ttl = settings.CACHE_TTL
 
